@@ -29,3 +29,15 @@
 .md-typeset div.arithmatex .katex {
   font-size: 1.12em;
 }
+
+/* Ensure Table of Contents (Right View) is clearly visible and styled */
+.md-sidebar--secondary {
+  opacity: 1 !important;
+}
+
+@media screen and (min-width: 60em) {
+  .md-sidebar--secondary {
+    display: block;
+  }
+}
+
