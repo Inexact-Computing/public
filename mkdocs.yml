@@ -56,12 +56,13 @@ markdown_extensions:
       permalink: true
 
 extra_css:
-  - stylesheets/vendor/katex/katex.min.css
+  - https://unpkg.com/katex@0/dist/katex.min.css
   - stylesheets/math.css
 
 extra_javascript:
-  - javascripts/vendor/katex/katex.min.js
   - javascripts/katex.js
+  - https://unpkg.com/katex@0/dist/katex.min.js
+  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
 
 nav:
   - Home: index.md
