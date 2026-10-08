@@ -31,6 +31,7 @@ theme:
     - search.suggest
     - search.highlight
     - content.code.copy
+    - toc.follow
 
 extra:
   generator: false
@@ -78,13 +79,13 @@ nav:
       - Approximate Adders: taxonomy/adders.md
       - Approximate CORDIC: taxonomy/cordic.md
   - 🧪 Interactive Labs:
-      - Labs Overview: labs/README.md
-      - Multiplier Explorer: labs/multiplier-explorer.html
-      - Image Filter Sandbox: labs/image-filter-sandbox.html
-      - Adder Carry Propagation: labs/adder-carry-race.html
-      - 4:2 Compressor Playground: labs/compressor-4to2-playground.html
-      - CORDIC Rotation Wheel: labs/cordic-rotation-visualizer.html
-      - Inexact Mastery Quiz: labs/quiz-inexact-mastery.html
+      - Labs Hub: labs/README.md
+      - Multiplier Playground: labs/multiplier-explorer.md
+      - Image Filter Sandbox: labs/image-filter-sandbox.md
+      - Adder Carry Propagation: labs/adder-carry-race.md
+      - 4:2 Compressor Playground: labs/compressor-4to2-playground.md
+      - CORDIC Rotation Wheel: labs/cordic-rotation-visualizer.md
+      - Inexact Mastery Quiz: labs/quiz-inexact-mastery.md
   - 🗺️ Learning Tracks:
       - Track 1 - Circuit Hacker: tracks/circuit-hacker/ROADMAP.md
       - Track 2 - AI Accelerator: tracks/ai-accelerator/ROADMAP.md
