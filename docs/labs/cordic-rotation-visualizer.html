@@ -6,41 +6,147 @@
   <title>CORDIC Angle Rotation Visualizer Lab</title>
   <style>
     :root {
-      --md-primary: #00897b;
-      --bg: #0f172a; --border: #334155; --text: #f8fafc; --muted: #94a3b8;
-      --code-bg: #1e293b;
+      --primary: #00897b;
+      --primary-light: #26a69a;
+      --primary-dark: #00695c;
+      --accent: #ff7043;
+      --accent-dark: #f4511e;
+      --bg: #ffffff;
+      --card-bg: #f8fafc;
+      --card-border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      --canvas-bg: #0f172a;
     }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #26a69a;
+        --primary-light: #4db6ac;
+        --primary-dark: #00897b;
+        --accent: #ff7043;
+        --accent-dark: #f4511e;
+        --bg: #1e293b;
+        --card-bg: #0f172a;
+        --card-border: #334155;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --input-bg: #1e293b;
+        --input-border: #475569;
+        --canvas-bg: #090d16;
+      }
+    }
+
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 12px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
-    .wrap { max-width: 900px; margin: 0 auto; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; background: var(--code-bg); }
-    h1 { margin: 0 0 0.35rem; font-size: 1.3rem; font-weight: 700; color: #38bdf8; }
-    .lede { margin: 0 0 0.85rem; color: var(--muted); font-size: 0.92rem; }
-    .grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 16px; margin-bottom: 12px; }
-    .controls { background: #0f172a; padding: 14px; border-radius: 6px; border: 1px solid var(--border); }
-    label { display: block; font-weight: 600; margin-bottom: 6px; color: #94a3b8; font-size: 14px; }
-    input[type="range"] { width: 100%; margin-bottom: 12px; }
-    canvas { width: 100%; height: 320px; background: #090d16; border: 1px solid var(--border); border-radius: 6px; }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.5rem; margin-top: 10px; }
-    .stat { background: #0f172a; border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem; text-align: center; }
-    .stat-label { font-size: 0.7rem; text-transform: uppercase; color: var(--muted); }
-    .stat-value { font-size: 1.1rem; font-weight: 700; font-family: monospace; color: #38bdf8; }
+    body {
+      margin: 0;
+      padding: 14px;
+      font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 850px;
+      margin: 0 auto;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: var(--card-bg);
+    }
+    h1 {
+      margin: 0 0 0.35rem;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .lede {
+      margin: 0 0 0.85rem;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .controls {
+      background: var(--input-bg);
+      padding: 14px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+      font-size: 13.5px;
+    }
+    input[type="range"] {
+      width: 100%;
+      margin-bottom: 12px;
+      accent-color: var(--primary);
+    }
+    select {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      font-family: inherit;
+    }
+    canvas {
+      width: 100%;
+      height: 300px;
+      background: var(--canvas-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 0.5rem;
+      margin-top: 10px;
+    }
+    .stat {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .stat-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: monospace;
+      color: var(--primary);
+    }
   </style>
 </head>
 <body>
 <div class="wrap">
   <h1>🧭 CORDIC Coordinate Rotation Visualizer Lab</h1>
-  <p class="lede">See how CORDIC rotates vectors using <strong>only bit-shifts and additions</strong> (no multipliers!). See why cutting the last 3 micro-rotations saves 40% latency with under 0.5° phase error.</p>
+  <p class="lede">See how CORDIC rotates vectors using <strong>only bit-shifts and additions</strong> (no multipliers!). See why early termination saves 40% latency with under 0.5° phase error.</p>
 
   <div class="grid">
     <div class="controls">
-      <label>Target Angle (θ): <span id="valTheta" style="color: #38bdf8;">45.0°</span></label>
+      <label>Target Angle (θ): <span id="valTheta" style="color: var(--primary); font-weight: bold;">45.0°</span></label>
       <input type="range" id="sliderTheta" min="-90" max="90" value="45" step="0.5">
 
-      <label>Number of CORDIC Iterations: <span id="valIter" style="color: #38bdf8;">5</span></label>
+      <label>Number of CORDIC Iterations: <span id="valIter" style="color: var(--primary); font-weight: bold;">5</span></label>
       <input type="range" id="sliderIter" min="1" max="8" value="5">
 
       <label>Approximation Mode:</label>
-      <select id="modeSelect" style="width: 100%; padding: 8px; background: #334155; color: #fff; border: 1px solid #475569; border-radius: 6px;">
+      <select id="modeSelect">
         <option value="standard">Full Standard CORDIC (All Iterations)</option>
         <option value="pruned" selected>Adaptive Early-Termination (Stop when |θ| < 1.0°)</option>
         <option value="scale">Approximate Scale Factor K (Shift-Only K=0.625)</option>
@@ -48,13 +154,13 @@
 
       <div class="stats">
         <div class="stat"><div class="stat-label">Calculated Angle</div><div class="stat-value" id="sAngle">44.8°</div></div>
-        <div class="stat"><div class="stat-label">Phase Error</div><div class="stat-value" id="sErr" style="color: #10b981;">0.2°</div></div>
+        <div class="stat"><div class="stat-label">Phase Error</div><div class="stat-value" id="sErr" style="color: var(--primary);">0.2°</div></div>
         <div class="stat"><div class="stat-label">Shift-Add Cycles</div><div class="stat-value" id="sCycles">5</div></div>
       </div>
     </div>
 
     <div>
-      <canvas id="wheelCanvas" width="400" height="320"></canvas>
+      <canvas id="wheelCanvas" width="400" height="300"></canvas>
     </div>
   </div>
 </div>
@@ -62,94 +168,105 @@
 <script>
 const canvas = document.getElementById('wheelCanvas');
 const ctx = canvas.getContext('2d');
-const cordicAngles = [45.0, 26.565, 14.036, 7.125, 3.576, 1.790, 0.895, 0.448];
+const sTheta = document.getElementById('sliderTheta');
+const sIter = document.getElementById('sliderIter');
+const modeSelect = document.getElementById('modeSelect');
+
+const microAngles = [45.0, 26.565, 14.036, 7.125, 3.576, 1.790, 0.895, 0.448];
 
 function update() {
-  let targetTheta = parseFloat(document.getElementById('sliderTheta').value);
-  let maxIter = parseInt(document.getElementById('sliderIter').value);
-  let mode = document.getElementById('modeSelect').value;
+  const target = parseFloat(sTheta.value);
+  const maxIters = parseInt(sIter.value);
+  const mode = modeSelect.value;
 
-  document.getElementById('valTheta').innerText = targetTheta.toFixed(1) + "°";
-  document.getElementById('valIter').innerText = maxIter;
+  document.getElementById('valTheta').innerText = target.toFixed(1) + '°';
+  document.getElementById('valIter').innerText = maxIters;
 
-  // Run CORDIC
-  let x = 1.0, y = 0.0, z = targetTheta;
-  let cycles = 0;
+  let x = 1.0, y = 0.0, z = target;
+  let executedCycles = 0;
 
-  for (let i = 0; i < maxIter; i++) {
-    if (mode === 'pruned' && Math.abs(z) < 1.0) break;
-    cycles++;
-    let d = z >= 0 ? 1 : -1;
-    let angleStep = cordicAngles[i];
-    let shift = Math.pow(2, -i);
+  for (let i = 0; i < maxIters; i++) {
+    executedCycles++;
+    const d = z >= 0 ? 1 : -1;
+    const shiftX = y * Math.pow(2, -i);
+    const shiftY = x * Math.pow(2, -i);
+    x = x - d * shiftX;
+    y = y + d * shiftY;
+    z = z - d * microAngles[i];
 
-    let x_new = x - d * y * shift;
-    let y_new = y + d * x * shift;
-    z = z - d * angleStep;
-
-    x = x_new;
-    y = y_new;
+    if (mode === 'pruned' && Math.abs(z) < 1.0 && i >= 3) break;
   }
 
-  let K = mode === 'scale' ? 0.625 : 0.607252935;
-  x *= K;
-  y *= K;
+  let k = 0.607252935;
+  if (mode === 'scale') k = 0.625;
 
-  let computedAngle = Math.atan2(y, x) * (180 / Math.PI);
-  let phaseErr = Math.abs(computedAngle - targetTheta);
+  x = x * k;
+  y = y * k;
 
-  document.getElementById('sAngle').innerText = computedAngle.toFixed(1) + "°";
-  document.getElementById('sErr').innerText = phaseErr.toFixed(2) + "°";
-  document.getElementById('sCycles').innerText = cycles;
+  const calculatedAngle = Math.atan2(y, x) * 180 / Math.PI;
+  const phaseError = Math.abs(calculatedAngle - target);
 
-  // Draw
+  document.getElementById('sAngle').innerText = calculatedAngle.toFixed(1) + '°';
+  const sErr = document.getElementById('sErr');
+  sErr.innerText = phaseError.toFixed(2) + '°';
+  sErr.style.color = phaseError < 0.5 ? 'var(--primary)' : 'var(--accent)';
+  document.getElementById('sCycles').innerText = executedCycles;
+
+  draw(target, calculatedAngle);
+}
+
+function draw(targetDeg, calcDeg) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  let cx = 200, cy = 160, r = 120;
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const r = 100;
 
-  // Axis & Circle
-  ctx.strokeStyle = "#334155";
+  ctx.strokeStyle = '#334155';
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, 2 * Math.PI);
-  ctx.moveTo(cx - r - 10, cy); ctx.lineTo(cx + r + 10, cy);
-  ctx.moveTo(cx, cy - r - 10); ctx.lineTo(cx, cy + r + 10);
   ctx.stroke();
 
-  // Target Vector (Ghost)
-  let radTarget = -targetTheta * (Math.PI / 180);
-  ctx.strokeStyle = "#475569";
+  ctx.beginPath();
+  ctx.moveTo(cx - r - 20, cy);
+  ctx.lineTo(cx + r + 20, cy);
+  ctx.moveTo(cx, cy - r - 20);
+  ctx.lineTo(cx, cy + r + 20);
+  ctx.stroke();
+
+  const targetRad = -targetDeg * Math.PI / 180;
+  ctx.strokeStyle = '#64748b';
+  ctx.lineWidth = 2;
   ctx.setLineDash([4, 4]);
   ctx.beginPath();
   ctx.moveTo(cx, cy);
-  ctx.lineTo(cx + Math.cos(radTarget) * r, cy + Math.sin(radTarget) * r);
+  ctx.lineTo(cx + r * Math.cos(targetRad), cy + r * Math.sin(targetRad));
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Computed Vector (Bright Teal)
-  let radComputed = -computedAngle * (Math.PI / 180);
-  ctx.strokeStyle = "#38bdf8";
+  const calcRad = -calcDeg * Math.PI / 180;
+  ctx.strokeStyle = '#00897b';
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(cx, cy);
-  ctx.lineTo(cx + Math.cos(radComputed) * r, cy + Math.sin(radComputed) * r);
+  ctx.lineTo(cx + r * Math.cos(calcRad), cy + r * Math.sin(calcRad));
   ctx.stroke();
 
-  // Point
-  ctx.fillStyle = "#10b981";
+  ctx.fillStyle = '#ff7043';
   ctx.beginPath();
-  ctx.arc(cx + Math.cos(radComputed) * r, cy + Math.sin(radComputed) * r, 5, 0, 2 * Math.PI);
+  ctx.arc(cx + r * Math.cos(calcRad), cy + r * Math.sin(calcRad), 6, 0, 2 * Math.PI);
   ctx.fill();
 
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "12px sans-serif";
-  ctx.fillText("Target: " + targetTheta.toFixed(1) + "°", 10, 20);
-  ctx.fillStyle = "#38bdf8";
-  ctx.fillText("CORDIC Vector: (" + x.toFixed(2) + ", " + y.toFixed(2) + ")", 10, 38);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '11px Roboto, sans-serif';
+  ctx.fillText('Target (Dashed)', 12, 20);
+  ctx.fillStyle = '#00897b';
+  ctx.fillText('CORDIC Vector (Teal)', 12, 36);
 }
 
-document.getElementById('sliderTheta').addEventListener('input', update);
-document.getElementById('sliderIter').addEventListener('input', update);
-document.getElementById('modeSelect').addEventListener('change', update);
+sTheta.addEventListener('input', update);
+sIter.addEventListener('input', update);
+modeSelect.addEventListener('change', update);
 update();
 </script>
 </body>

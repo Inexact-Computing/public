@@ -2,52 +2,96 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Interactive Image Filter Sandbox</title>
 <style>
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    max-width: 850px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #0f172a;
-    color: #f8fafc;
-    border-radius: 12px;
+  :root {
+    --primary: #00897b;
+    --primary-light: #26a69a;
+    --primary-dark: #00695c;
+    --accent: #ff7043;
+    --accent-dark: #f4511e;
+    --bg: #ffffff;
+    --card-bg: #f8fafc;
+    --card-border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
   }
-  h2 { color: #38bdf8; margin-top: 0; }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #26a69a;
+      --primary-light: #4db6ac;
+      --primary-dark: #00897b;
+      --accent: #ff7043;
+      --accent-dark: #f4511e;
+      --bg: #1e293b;
+      --card-bg: #0f172a;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: #1e293b;
+      --input-border: #475569;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 850px;
+    margin: 10px auto;
+    padding: 16px;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+  }
+  h2 { color: var(--primary); margin-top: 0; font-size: 1.35rem; }
   .control-panel {
-    background: #1e293b;
+    background: var(--card-bg);
     padding: 16px;
     border-radius: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     display: flex;
-    gap: 16px;
+    gap: 14px;
     flex-wrap: wrap;
+    border: 1px solid var(--card-border);
   }
-  .control-item { flex: 1; min-width: 200px; }
-  label { font-weight: bold; display: block; margin-bottom: 6px; color: #94a3b8; font-size: 14px; }
+  .control-item { flex: 1; min-width: 180px; }
+  label { font-weight: 600; display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 13.5px; }
   select, button {
     width: 100%;
-    padding: 8px 12px;
+    padding: 9px 12px;
     border-radius: 6px;
-    background: #334155;
-    color: #fff;
-    border: 1px solid #475569;
+    background: var(--input-bg);
+    color: var(--text);
+    border: 1px solid var(--input-border);
     font-size: 14px;
+    font-family: inherit;
     cursor: pointer;
   }
-  button:hover { background: #38bdf8; color: #0f172a; font-weight: bold; }
+  button {
+    background: var(--primary);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  button:hover { background: var(--primary-dark); }
   .canvas-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
+    gap: 14px;
+    margin-bottom: 14px;
   }
   .canvas-box {
-    background: #1e293b;
+    background: var(--card-bg);
     padding: 12px;
     border-radius: 8px;
     text-align: center;
-    border: 1px solid #334155;
+    border: 1px solid var(--card-border);
   }
   canvas {
     max-width: 100%;
@@ -58,98 +102,107 @@
   .stats-bar {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
+    gap: 10px;
   }
   .stat-card {
-    background: #1e293b;
-    padding: 12px;
-    border-radius: 8px;
+    background: var(--card-bg);
+    padding: 10px;
+    border-radius: 6px;
     text-align: center;
-    border: 1px solid #334155;
+    border: 1px solid var(--card-border);
   }
-  .stat-val { font-size: 22px; font-weight: bold; color: #38bdf8; margin-top: 4px; }
+  .stat-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); }
+  .stat-val { font-size: 18px; font-weight: bold; color: var(--primary); font-family: monospace; }
 </style>
 </head>
 <body>
 
-<h2>🖼️ Interactive Image Filter & Noise Sandbox</h2>
-<p>See firsthand why human eyes cannot notice small mathematical approximations in 2D image filtering!</p>
+<h2>🖼️ Interactive Image Filtering Sandbox</h2>
+<p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 14px;">See how 2D image convolution tolerates approximate multiplier arithmetic without visible loss of sharpness or edges.</p>
 
 <div class="control-panel">
   <div class="control-item">
-    <label>Test Pattern:</label>
-    <select id="patternSelect">
-      <option value="circles">Concentric Rings & Gradients</option>
-      <option value="checker">High-Frequency Grid</option>
-      <option value="landscape">Synthetic Horizon & Sun</option>
+    <label>Test Image Pattern:</label>
+    <select id="imgSelect">
+      <option value="geometric">High-Contrast Shapes</option>
+      <option value="gradient">Smooth Gradient & Noise</option>
+      <option value="checkerboard">Sharp Checkerboard Grid</option>
     </select>
   </div>
+
   <div class="control-item">
-    <label>2D Filter Kernel:</label>
+    <label>Convolution Filter Kernel:</label>
     <select id="kernelSelect">
-      <option value="blur">Gaussian Smoothing Blur</option>
-      <option value="edge">Sobel Edge Detection</option>
-      <option value="sharpen">Unsharp Mask (Sharpen)</option>
+      <option value="gaussian">Gaussian Blur 3x3</option>
+      <option value="sobel" selected>Sobel Edge Detection</option>
+      <option value="sharpen">Sharpen Filter</option>
     </select>
   </div>
+
   <div class="control-item">
-    <label>Multiplier Hardware:</label>
+    <label>Multiplier Architecture:</label>
     <select id="multSelect">
-      <option value="exact">1. Exact Multiplier (0% Error)</option>
-      <option value="trunc4" selected>2. Truncated LSB-4 (Lower 4 bits zeroed)</option>
-      <option value="trunc6">3. Aggressive Truncation (Lower 6 bits zeroed)</option>
-      <option value="roba">4. RoBA (Rounding to Power-of-2)</option>
+      <option value="exact">Exact (100% Precision)</option>
+      <option value="trunc4">Truncated-4 (Drop 4 LSBs)</option>
+      <option value="roba" selected>RoBA Multiplier (Power-of-2 Rounding)</option>
+      <option value="noisy">Aggressive Truncated-6</option>
     </select>
   </div>
 </div>
 
 <div class="canvas-grid">
   <div class="canvas-box">
-    <div style="font-weight: bold; margin-bottom: 8px; color: #94a3b8;">Original Test Image</div>
-    <canvas id="origCanvas" width="200" height="200"></canvas>
+    <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text);">Exact Reference Image</div>
+    <canvas id="canvasExact" width="200" height="200"></canvas>
   </div>
   <div class="canvas-box">
-    <div style="font-weight: bold; margin-bottom: 8px; color: #38bdf8;">Filtered Image (Hardware Emulated)</div>
-    <canvas id="outCanvas" width="200" height="200"></canvas>
+    <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text);">Approximate Filter Output</div>
+    <canvas id="canvasApprox" width="200" height="200"></canvas>
   </div>
 </div>
 
 <div class="stats-bar">
   <div class="stat-card">
-    <div style="color: #94a3b8; font-size: 13px;">Peak Signal-to-Noise Ratio (PSNR)</div>
-    <div class="stat-val" id="psnrVal" style="color: #10b981;">38.4 dB</div>
+    <div class="stat-label">PSNR (Peak Signal-to-Noise)</div>
+    <div class="stat-val" id="valPSNR">38.4 dB</div>
   </div>
   <div class="stat-card">
-    <div style="color: #94a3b8; font-size: 13px;">Visual Quality Rating</div>
-    <div class="stat-val" id="qualVal" style="color: #10b981;">Crisp / High Fidelity ✨</div>
+    <div class="stat-label">Perceptual Quality</div>
+    <div class="stat-val" id="valQuality" style="color: var(--primary);">Excellent</div>
   </div>
   <div class="stat-card">
-    <div style="color: #94a3b8; font-size: 13px;">Silicon Energy Saved</div>
-    <div class="stat-val" id="energyVal" style="color: #38bdf8;">~48% 🔋</div>
+    <div class="stat-label">Hardware Energy Saved</div>
+    <div class="stat-val" id="valEnergy">~75%</div>
   </div>
 </div>
 
 <script>
-const origCanvas = document.getElementById('origCanvas');
-const outCanvas = document.getElementById('outCanvas');
-const ctxOrig = origCanvas.getContext('2d');
-const ctxOut = outCanvas.getContext('2d');
+const canvasE = document.getElementById('canvasExact');
+const ctxE = canvasE.getContext('2d');
+const canvasA = document.getElementById('canvasApprox');
+const ctxA = canvasA.getContext('2d');
 
-function drawPattern(type) {
-  let imgData = ctxOrig.createImageData(200, 200);
-  let d = imgData.data;
-  for (let y = 0; y < 200; y++) {
-    for (let x = 0; x < 200; x++) {
-      let idx = (y * 200 + x) * 4;
+const imgSelect = document.getElementById('imgSelect');
+const kernelSelect = document.getElementById('kernelSelect');
+const multSelect = document.getElementById('multSelect');
+
+function createPattern(type) {
+  const w = 200, h = 200;
+  const imgData = ctxE.createImageData(w, h);
+  const d = imgData.data;
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = (y * w + x) * 4;
       let val = 128;
-      if (type === 'circles') {
-        let dx = x - 100, dy = y - 100;
-        let dist = Math.sqrt(dx * dx + dy * dy);
-        val = Math.sin(dist / 8) * 127 + 128;
-      } else if (type === 'checker') {
-        val = ((Math.floor(x / 16) + Math.floor(y / 16)) % 2 === 0) ? 220 : 35;
-      } else if (type === 'landscape') {
-        val = y < 100 ? (y * 2.5) : (255 - (y - 100) * 1.5);
+      if (type === 'geometric') {
+        const dx = x - 100, dy = y - 100;
+        if (dx*dx + dy*dy < 2500) val = 240;
+        else if (Math.abs(dx) < 60 && Math.abs(dy) < 60) val = 60;
+      } else if (type === 'gradient') {
+        val = ((x + y) / 2) % 255;
+      } else if (type === 'checkerboard') {
+        val = ((Math.floor(x/25) + Math.floor(y/25)) % 2 === 0) ? 230 : 30;
       }
       d[idx] = val;
       d[idx+1] = val;
@@ -157,101 +210,113 @@ function drawPattern(type) {
       d[idx+3] = 255;
     }
   }
-  ctxOrig.putImageData(imgData, 0, 0);
+  return imgData;
 }
 
-function approxMult(a, b, mode) {
-  if (mode === 'exact') return a * b;
-  if (mode === 'trunc4') return ((a >> 4) << 4) * ((b >> 4) << 4);
-  if (mode === 'trunc6') return ((a >> 6) << 6) * ((b >> 6) << 6);
+function approxMul(a, b, mode) {
+  const exact = a * b;
+  if (mode === 'exact') return exact;
+  if (mode === 'trunc4') return exact & ~0x0F;
+  if (mode === 'noisy') return exact & ~0x3F;
   if (mode === 'roba') {
-    let Ar = Math.pow(2, Math.round(Math.log2(Math.max(1, a))));
-    let Br = Math.pow(2, Math.round(Math.log2(Math.max(1, b))));
-    return Math.max(0, Ar * b + Br * a - Ar * Br);
+    if (a === 0 || b === 0) return 0;
+    const ar = Math.pow(2, Math.round(Math.log2(Math.abs(a) || 1)));
+    const br = Math.pow(2, Math.round(Math.log2(Math.abs(b) || 1)));
+    return (ar * b) + (br * a) - (ar * br);
   }
-  return a * b;
+  return exact;
 }
 
-function applyFilter() {
-  let pat = document.getElementById('patternSelect').value;
-  let kernelType = document.getElementById('kernelSelect').value;
-  let multMode = document.getElementById('multSelect').value;
+function applyConvolution() {
+  const pattern = imgSelect.value;
+  const kernelType = kernelSelect.value;
+  const multMode = multSelect.value;
 
-  drawPattern(pat);
+  const src = createPattern(pattern);
+  const w = 200, h = 200;
 
-  let srcData = ctxOrig.getImageData(0, 0, 200, 200);
-  let outData = ctxOut.createImageData(200, 200);
-  let src = srcData.data;
-  let dst = outData.data;
+  const outE = ctxE.createImageData(w, h);
+  const outA = ctxA.createImageData(w, h);
 
-  let kernel = [
-    [1, 2, 1],
-    [2, 4, 2],
-    [1, 2, 1]
+  let k = [
+    [1/16, 2/16, 1/16],
+    [2/16, 4/16, 2/16],
+    [1/16, 2/16, 1/16]
   ];
-  let kSum = 16;
-
-  if (kernelType === 'edge') {
-    kernel = [
-      [-1, -1, -1],
-      [-1,  8, -1],
-      [-1, -1, -1]
+  if (kernelType === 'sobel') {
+    k = [
+      [-1, 0, 1],
+      [-2, 0, 2],
+      [-1, 0, 1]
     ];
-    kSum = 1;
   } else if (kernelType === 'sharpen') {
-    kernel = [
-      [ 0, -1,  0],
-      [-1,  5, -1],
-      [ 0, -1,  0]
+    k = [
+      [0, -1, 0],
+      [-1, 5, -1],
+      [0, -1, 0]
     ];
-    kSum = 1;
   }
 
-  let totalDiffSq = 0;
+  let mse = 0;
 
-  for (let y = 1; y < 199; y++) {
-    for (let x = 1; x < 199; x++) {
-      let acc = 0;
-      let accExact = 0;
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      let sumE = 0;
+      let sumA = 0;
+
       for (let ky = -1; ky <= 1; ky++) {
         for (let kx = -1; kx <= 1; kx++) {
-          let pVal = src[((y + ky) * 200 + (x + kx)) * 4];
-          let kWeight = kernel[ky + 1][kx + 1];
-          let kAbs = Math.abs(kWeight);
-          let multRes = approxMult(pVal, kAbs, multMode);
-          if (kWeight < 0) multRes = -multRes;
-          acc += multRes;
-          accExact += pVal * kWeight;
+          const pixelVal = src.data[((y + ky) * w + (x + kx)) * 4];
+          const weight = k[ky + 1][kx + 1];
+
+          sumE += pixelVal * weight;
+          sumA += approxMul(pixelVal, weight * 16, multMode) / 16;
         }
       }
-      let finalVal = Math.min(255, Math.max(0, Math.round(acc / kSum)));
-      let exactFinal = Math.min(255, Math.max(0, Math.round(accExact / kSum)));
-      let idx = (y * 200 + x) * 4;
-      dst[idx] = finalVal;
-      dst[idx+1] = finalVal;
-      dst[idx+2] = finalVal;
-      dst[idx+3] = 255;
 
-      totalDiffSq += Math.pow(finalVal - exactFinal, 2);
+      const clampedE = Math.min(255, Math.max(0, sumE));
+      const clampedA = Math.min(255, Math.max(0, sumA));
+
+      const idx = (y * w + x) * 4;
+      outE.data[idx] = outE.data[idx+1] = outE.data[idx+2] = clampedE;
+      outE.data[idx+3] = 255;
+
+      outA.data[idx] = outA.data[idx+1] = outA.data[idx+2] = clampedA;
+      outA.data[idx+3] = 255;
+
+      mse += Math.pow(clampedE - clampedA, 2);
     }
   }
-  ctxOut.putImageData(outData, 0, 0);
 
-  let mse = totalDiffSq / (198 * 198);
-  let psnr = mse > 0 ? (10 * Math.log10(255 * 255 / mse)).toFixed(1) + " dB" : "∞ (Exact)";
-  let energy = multMode === 'exact' ? "0%" : (multMode === 'trunc4' ? "~46% 🔋" : (multMode === 'trunc6' ? "~68% 🔋⚡" : "~62% 🔋⚡"));
-  let qual = mse === 0 ? "Flawless Exact 🏆" : (mse < 5 ? "Crisp / High Fidelity ✨" : (mse < 30 ? "Acceptable Video Grade 🎬" : "Heavy Grain / Glitch ⚠️"));
+  ctxE.putImageData(outE, 0, 0);
+  ctxA.putImageData(outA, 0, 0);
 
-  document.getElementById('psnrVal').innerText = psnr;
-  document.getElementById('energyVal').innerText = energy;
-  document.getElementById('qualVal').innerText = qual;
+  mse = mse / (w * h);
+  let psnr = 99.0;
+  if (mse > 0) psnr = 10 * Math.log10((255 * 255) / mse);
+
+  document.getElementById('valPSNR').innerText = psnr > 60 ? '∞ (Exact)' : psnr.toFixed(1) + ' dB';
+  
+  const qEl = document.getElementById('valQuality');
+  if (psnr > 35) {
+    qEl.innerText = "Excellent";
+    qEl.style.color = "var(--primary)";
+  } else if (psnr > 25) {
+    qEl.innerText = "Good";
+    qEl.style.color = "var(--primary)";
+  } else {
+    qEl.innerText = "Degraded";
+    qEl.style.color = "var(--accent)";
+  }
+
+  const energyMap = { exact: '0%', trunc4: '~45%', roba: '~75%', noisy: '~82%' };
+  document.getElementById('valEnergy').innerText = energyMap[multMode];
 }
 
-document.getElementById('patternSelect').addEventListener('change', applyFilter);
-document.getElementById('kernelSelect').addEventListener('change', applyFilter);
-document.getElementById('multSelect').addEventListener('change', applyFilter);
-applyFilter();
+imgSelect.addEventListener('change', applyConvolution);
+kernelSelect.addEventListener('change', applyConvolution);
+multSelect.addEventListener('change', applyConvolution);
+applyConvolution();
 </script>
-
 </body>
 </html>

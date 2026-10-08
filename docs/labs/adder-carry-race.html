@@ -6,32 +6,154 @@
   <title>Adder Carry Propagation Race Lab</title>
   <style>
     :root {
-      --md-primary: #00897b; --md-primary-light: #26a69a;
-      --bg: #0f172a; --border: #334155; --text: #f8fafc; --muted: #94a3b8;
-      --code-bg: #1e293b; --ok: #10b981; --bad: #f43f5e; --warn: #fbbf24;
+      --primary: #00897b;
+      --primary-light: #26a69a;
+      --primary-dark: #00695c;
+      --accent: #ff7043;
+      --accent-dark: #f4511e;
+      --bg: #ffffff;
+      --card-bg: #f8fafc;
+      --card-border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      --canvas-bg: #0f172a;
     }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #26a69a;
+        --primary-light: #4db6ac;
+        --primary-dark: #00897b;
+        --accent: #ff7043;
+        --accent-dark: #f4511e;
+        --bg: #1e293b;
+        --card-bg: #0f172a;
+        --card-border: #334155;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --input-bg: #1e293b;
+        --input-border: #475569;
+        --canvas-bg: #090d16;
+      }
+    }
+
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 12px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; font-size: 0.95rem; }
-    .wrap { max-width: 900px; margin: 0 auto; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; background: var(--code-bg); }
-    h1 { margin: 0 0 0.35rem; font-size: 1.3rem; font-weight: 700; color: #38bdf8; }
-    .lede { margin: 0 0 0.85rem; color: var(--muted); font-size: 0.92rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; margin-bottom: 0.75rem; }
-    .cellBtn { border: 1px solid var(--border); background: #0f172a; color: #38bdf8; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; text-align: left; font-weight: 600; }
-    .cellBtn.active { background: #38bdf822; border-color: #38bdf8; }
-    .controls { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem; background: #0f172a; padding: 10px; border-radius: 6px; border: 1px solid var(--border); }
-    button.primary { border: none; background: #00897b; color: #fff; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600; }
-    button.primary:hover { background: #26a69a; }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; margin-bottom: 0.75rem; }
-    .stat { background: #0f172a; border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem; text-align: center; }
-    .stat-label { font-size: 0.7rem; text-transform: uppercase; color: var(--muted); }
-    .stat-value { font-size: 1.1rem; font-weight: 700; font-family: monospace; color: #38bdf8; }
-    canvas { display: block; width: 100%; height: 220px; background: #090d16; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.75rem; }
+    body {
+      margin: 0;
+      padding: 14px;
+      font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 850px;
+      margin: 0 auto;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: var(--card-bg);
+    }
+    h1 {
+      margin: 0 0 0.35rem;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .lede {
+      margin: 0 0 0.85rem;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .cellBtn {
+      border: 1px solid var(--card-border);
+      background: var(--input-bg);
+      color: var(--text);
+      padding: 0.6rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .cellBtn.active {
+      background: var(--primary);
+      border-color: var(--primary-dark);
+      color: #ffffff;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      background: var(--input-bg);
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+    }
+    button.primary {
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      padding: 0.55rem 1.1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    button.primary:hover {
+      background: var(--primary-dark);
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .stat {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .stat-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: monospace;
+      color: var(--primary);
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 200px;
+      background: var(--canvas-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+    }
   </style>
 </head>
 <body>
 <div class="wrap">
   <h1>⚡ Adder Carry Propagation Race Lab</h1>
-  <p class="lede">Watch how the <strong>carry chain delay</strong> limits exact addition, and how approximate adders (ACA, LOA, LPCA) break the chain to achieve 3× faster clock speeds!</p>
+  <p class="lede">Watch how the <strong>carry chain ripple delay</strong> limits exact addition, and how approximate adders (ACA, LOA) cut the chain to achieve 3× faster clock frequencies!</p>
 
   <div class="grid" id="archBtns">
     <button class="cellBtn active" onclick="setArch('rca')">1. Exact Ripple Carry (RCA)</button>
@@ -42,17 +164,17 @@
 
   <div class="controls">
     <button class="primary" onclick="startRace()">🚀 Fire Carry Propagation Race</button>
-    <label style="font-size: 0.85rem; color: var(--muted);">Bit-width: <strong>16 bits</strong></label>
-    <label style="font-size: 0.85rem; color: var(--muted);">Worst-Case Carry Pattern: <code>0xFFFF + 0x0001</code></label>
+    <span style="font-size: 0.85rem; color: var(--text-muted);">Bit-width: <strong>16 bits</strong></span>
+    <span style="font-size: 0.85rem; color: var(--text-muted);">Pattern: <code>0xFFFF + 0x0001</code></span>
   </div>
 
-  <canvas id="raceCanvas" width="850" height="220"></canvas>
+  <canvas id="raceCanvas" width="850" height="200"></canvas>
 
   <div class="stats">
     <div class="stat"><div class="stat-label">Architecture</div><div class="stat-value" id="sArch">RCA</div></div>
     <div class="stat"><div class="stat-label">Propagation Delay</div><div class="stat-value" id="sDelay">16 gate delays</div></div>
     <div class="stat"><div class="stat-label">Critical Path</div><div class="stat-value" id="sPath">Full 16 bits</div></div>
-    <div class="stat"><div class="stat-label">Error Rate</div><div class="stat-value" id="sError" style="color: #10b981;">0.00% (Exact)</div></div>
+    <div class="stat"><div class="stat-label">Error Rate</div><div class="stat-value" id="sError" style="color: var(--primary);">0.00% (Exact)</div></div>
   </div>
 </div>
 
@@ -60,110 +182,94 @@
 const canvas = document.getElementById('raceCanvas');
 const ctx = canvas.getContext('2d');
 let currentArch = 'rca';
-let animProgress = 16;
-let animId = null;
+let animFrame = null;
+let raceProgress = 0;
 
-const archInfo = {
-  rca: { name: "Exact Ripple Carry (RCA)", delay: "16 gate delays", path: "Full 16-bit chain", error: "0.00% (Exact)", maxStep: 16, breaks: [] },
-  cla: { name: "Carry Lookahead (CLA)", delay: "4 gate delays", path: "Tree lookahead", error: "0.00% (Exact)", maxStep: 4, breaks: [] },
-  aca: { name: "Speculative Adder (ACA-4)", delay: "4 gate delays", path: "4-bit carry window", error: "0.48% (Near-Zero)", maxStep: 4, breaks: [4, 8, 12] },
-  loa: { name: "Lower-Part Approx (LOA-8)", delay: "8 gate delays", path: "Top 8 bits only", error: "1.25% (Bounded)", maxStep: 8, breaks: [8] }
+const archs = {
+  rca: { name: 'RCA', delay: 16, maxBit: 16, path: 'Full 16 bits', err: '0.00% (Exact)', errCol: 'var(--primary)', speed: 1 },
+  cla: { name: 'CLA', delay: 4, maxBit: 16, path: '4-bit lookahead tree', err: '0.00% (Exact)', errCol: 'var(--primary)', speed: 4 },
+  aca: { name: 'ACA-4', delay: 4, maxBit: 4, path: '4-bit speculative window', err: '~0.4% Error', errCol: 'var(--accent)', speed: 4 },
+  loa: { name: 'LOA-8', delay: 8, maxBit: 8, path: 'Upper 8 bits only', err: '~1.2% Error', errCol: 'var(--accent)', speed: 2 }
 };
 
-function setArch(arch) {
-  currentArch = arch;
-  let btns = document.querySelectorAll('.cellBtn');
-  btns.forEach(b => b.classList.remove('active'));
+function setArch(a) {
+  currentArch = a;
+  document.querySelectorAll('.cellBtn').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
-
-  let info = archInfo[arch];
-  document.getElementById('sArch').innerText = info.name.split(' ')[0];
-  document.getElementById('sDelay').innerText = info.delay;
-  document.getElementById('sPath').innerText = info.path;
-  document.getElementById('sError').innerText = info.error;
-  document.getElementById('sError').style.color = info.error.includes("Exact") ? "#10b981" : "#fbbf24";
-
-  animProgress = info.maxStep;
-  draw();
+  
+  const d = archs[a];
+  document.getElementById('sArch').innerText = d.name;
+  document.getElementById('sDelay').innerText = d.delay + ' gate delays';
+  document.getElementById('sPath').innerText = d.path;
+  const sErr = document.getElementById('sError');
+  sErr.innerText = d.err;
+  sErr.style.color = d.errCol;
+  
+  startRace();
 }
 
 function startRace() {
-  animProgress = 0;
-  if (animId) cancelAnimationFrame(animId);
-  function loop() {
-    animProgress += 0.2;
-    draw();
-    if (animProgress < archInfo[currentArch].maxStep) {
-      animId = requestAnimationFrame(loop);
-    } else {
-      animProgress = archInfo[currentArch].maxStep;
-      draw();
-    }
+  if (animFrame) cancelAnimationFrame(animFrame);
+  raceProgress = 0;
+  animate();
+}
+
+function animate() {
+  raceProgress += 0.25 * archs[currentArch].speed;
+  draw();
+  if (raceProgress < 16) {
+    animFrame = requestAnimationFrame(animate);
   }
-  loop();
 }
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  let bits = 16;
-  let bitWidth = 46;
-  let startX = 40;
-  let y = 100;
+  const totalBits = 16;
+  const bitW = (canvas.width - 60) / totalBits;
+  const startX = 30;
+  const startY = 60;
+  const h = 70;
 
-  for (let i = 0; i < bits; i++) {
-    let x = startX + (bits - 1 - i) * bitWidth;
-    let isActive = false;
-    let isBroken = archInfo[currentArch].breaks.includes(i);
+  for (let i = 0; i < totalBits; i++) {
+    const bitIdx = 15 - i;
+    const x = startX + i * bitW;
+    const isCompleted = raceProgress >= (16 - i);
+    const isApprox = (currentArch === 'loa' && bitIdx < 8) || (currentArch === 'aca' && bitIdx % 4 === 0);
 
-    if (currentArch === 'rca') {
-      isActive = i < animProgress;
-    } else if (currentArch === 'cla') {
-      isActive = (i / 4) < animProgress;
-    } else if (currentArch === 'aca') {
-      let stage = i % 4;
-      isActive = stage < animProgress;
-    } else if (currentArch === 'loa') {
-      if (i < 8) {
-        isActive = true; // Lower part instant OR logic!
-      } else {
-        isActive = (i - 8) < animProgress;
-      }
-    }
+    ctx.fillStyle = isCompleted ? '#00897b' : '#1e293b';
+    if (isApprox && isCompleted) ctx.fillStyle = '#ff7043';
 
-    // Draw Bit Cell
-    ctx.fillStyle = isActive ? (isBroken ? "#f43f5e" : "#00897b") : "#1e293b";
-    ctx.strokeStyle = "#38bdf8";
+    ctx.strokeStyle = '#334155';
     ctx.lineWidth = 1.5;
-    ctx.fillRect(x, y, 38, 48);
-    ctx.strokeRect(x, y, 38, 48);
+    ctx.fillRect(x + 2, startY, bitW - 4, h);
+    ctx.strokeRect(x + 2, startY, bitW - 4, h);
 
-    // Bit Label
-    ctx.fillStyle = "#fff";
-    ctx.font = "12px monospace";
-    ctx.fillText("B" + i, x + 10, y + 28);
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 12px Roboto, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('B' + bitIdx, x + bitW / 2, startY + 24);
 
-    // Carry Arrow
-    if (i < bits - 1) {
-      ctx.strokeStyle = isBroken ? "#f43f5e" : (isActive ? "#38bdf8" : "#475569");
-      ctx.lineWidth = isBroken ? 2 : 2;
+    ctx.font = '10px Roboto, sans-serif';
+    ctx.fillStyle = isCompleted ? '#e0f2f1' : '#64748b';
+    ctx.fillText(isCompleted ? '✓ Done' : 'Wait', x + bitW / 2, startY + 48);
+
+    if (i < totalBits - 1) {
+      const nextX = startX + (i + 1) * bitW;
+      ctx.strokeStyle = isCompleted ? '#26a69a' : '#334155';
+      ctx.lineWidth = isCompleted ? 2.5 : 1;
       ctx.beginPath();
-      let nextX = startX + (bits - 1 - (i + 1)) * bitWidth + 38;
-      ctx.moveTo(x, y + 24);
-      ctx.lineTo(nextX, y + 24);
+      ctx.moveTo(x + bitW - 2, startY + h / 2);
+      ctx.lineTo(nextX + 2, startY + h / 2);
       ctx.stroke();
-
-      if (isBroken) {
-        // Cut Symbol
-        ctx.fillStyle = "#f43f5e";
-        ctx.fillText("✂️", x - 12, y + 20);
-      }
     }
   }
 
-  // Header Title
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "14px sans-serif";
-  ctx.fillText("MSB (Bit 15)  <--------------------------------  LSB (Bit 0)", startX + 220, 40);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '12px Roboto, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Bit 15 (MSB)', startX, startY + h + 24);
+  ctx.textAlign = 'right';
+  ctx.fillText('Bit 0 (LSB - Carry In)', startX + totalBits * bitW, startY + h + 24);
 }
 
 draw();

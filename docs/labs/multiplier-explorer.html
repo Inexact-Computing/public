@@ -2,37 +2,76 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Interactive Multiplier Explorer</title>
 <style>
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #0f172a;
-    color: #f8fafc;
-    border-radius: 12px;
+  :root {
+    --primary: #00897b;
+    --primary-light: #26a69a;
+    --primary-dark: #00695c;
+    --accent: #ff7043;
+    --accent-dark: #f4511e;
+    --bg: #ffffff;
+    --card-bg: #f8fafc;
+    --card-border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
   }
-  h2 { color: #38bdf8; margin-top: 0; }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #26a69a;
+      --primary-light: #4db6ac;
+      --primary-dark: #00897b;
+      --accent: #ff7043;
+      --accent-dark: #f4511e;
+      --bg: #1e293b;
+      --card-bg: #0f172a;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: #1e293b;
+      --input-border: #475569;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 800px;
+    margin: 10px auto;
+    padding: 16px;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+  }
+  h2 { color: var(--primary); margin-top: 0; font-size: 1.35rem; }
+  p.desc { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 16px; }
   .control-group {
-    background: #1e293b;
+    background: var(--card-bg);
     padding: 16px;
     border-radius: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
+    border: 1px solid var(--card-border);
   }
-  label { font-weight: bold; display: block; margin-bottom: 6px; color: #94a3b8; }
+  label { font-weight: 600; display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 13.5px; }
   input[type="range"] {
     width: 100%;
     margin-bottom: 8px;
+    accent-color: var(--primary);
   }
   select {
     width: 100%;
-    padding: 8px;
+    padding: 9px 12px;
     border-radius: 6px;
-    background: #334155;
-    color: #fff;
-    border: 1px solid #475569;
-    font-size: 16px;
+    background: var(--input-bg);
+    color: var(--text);
+    border: 1px solid var(--input-border);
+    font-size: 14.5px;
+    font-family: inherit;
   }
   .grid {
     display: grid;
@@ -40,145 +79,158 @@
     gap: 12px;
   }
   .stat-card {
-    background: #1e293b;
+    background: var(--card-bg);
     padding: 14px;
     border-radius: 8px;
     text-align: center;
-    border: 1px solid #334155;
+    border: 1px solid var(--card-border);
   }
   .stat-value {
-    font-size: 26px;
-    font-weight: bold;
-    color: #38bdf8;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary);
     margin-top: 4px;
+    font-family: monospace;
   }
-  .highlight-error { color: #f43f5e; }
-  .highlight-savings { color: #10b981; }
+  .highlight-error { color: var(--accent); }
+  .highlight-savings { color: var(--primary); }
   .binary-box {
     font-family: monospace;
-    font-size: 18px;
+    font-size: 16px;
     letter-spacing: 2px;
-    margin-top: 10px;
-    background: #090d16;
     padding: 10px;
+    background: var(--input-bg);
     border-radius: 6px;
-    text-align: center;
+    border: 1px solid var(--input-border);
+    margin-top: 8px;
+    word-break: break-all;
+    color: var(--text);
   }
 </style>
 </head>
 <body>
 
-<h2>🎛️ Interactive Approximate Multiplier Explorer</h2>
-<p>Drag the operand sliders and select an approximation algorithm to see exact vs. approximate math in real time!</p>
+<h2>🎛️ Interactive Multiplier Explorer</h2>
+<p class="desc">Drag the sliders to test how different hardware approximation techniques (DRUM, RoBA, Truncation) multiply numbers and save silicon energy.</p>
 
 <div class="control-group">
-  <label>Operand A: <span id="valA">145</span> (<span id="binA">10010001</span>₂)</label>
-  <input type="range" id="sliderA" min="1" max="255" value="145">
+  <label>Operand A: <span id="valA" style="color: var(--primary); font-weight: bold;">125</span></label>
+  <input type="range" id="sliderA" min="1" max="255" value="125">
 
-  <label style="margin-top: 12px;">Operand B: <span id="valB">83</span> (<span id="binB">01010011</span>₂)</label>
-  <input type="range" id="sliderB" min="1" max="255" value="83">
-</div>
+  <label>Operand B: <span id="valB" style="color: var(--primary); font-weight: bold;">89</span></label>
+  <input type="range" id="sliderB" min="1" max="255" value="89">
 
-<div class="control-group">
-  <label>Approximation Algorithm:</label>
-  <select id="algoSelect">
-    <option value="exact">1. Exact Multiplier (0% Error, 0% Energy Saved)</option>
-    <option value="trunc4" selected>2. Truncated LSB-4 (Lower 4 bits discarded)</option>
-    <option value="roba">3. RoBA (Rounding to Nearest Power-of-2)</option>
-    <option value="drum4">4. DRUM-4 (Dynamic Range 4-bit Active Window)</option>
+  <label>Approximation Architecture:</label>
+  <select id="archSelect">
+    <option value="exact">Exact 8-Bit Multiplier (100% Precision, Baseline Energy)</option>
+    <option value="trunc4">Truncated Multiplier (Drop Lower 4 Columns, ~45% Energy Saved)</option>
+    <option value="roba" selected>RoBA Multiplier (Power-of-2 Rounding, ~75% Energy Saved)</option>
+    <option value="drum4">DRUM-4 Multiplier (Dynamic 4-Bit Window, ~58% Energy Saved)</option>
   </select>
 </div>
 
 <div class="grid">
   <div class="stat-card">
-    <div style="color: #94a3b8; font-size: 14px;">Exact Result (A × B)</div>
-    <div class="stat-value" id="exactRes">12,035</div>
+    <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Exact Answer ($A \times B$)</div>
+    <div class="stat-value" id="resExact">11,125</div>
+    <div class="binary-box" id="binExact">0010101101110101</div>
   </div>
+
   <div class="stat-card">
-    <div style="color: #94a3b8; font-size: 14px;">Inexact Circuit Result</div>
-    <div class="stat-value" id="approxRes" style="color: #fbbf24;">11,968</div>
-  </div>
-  <div class="stat-card">
-    <div style="color: #94a3b8; font-size: 14px;">Absolute Error Distance</div>
-    <div class="stat-value highlight-error" id="errDist">67</div>
-  </div>
-  <div class="stat-card">
-    <div style="color: #94a3b8; font-size: 14px;">Relative Error (%)</div>
-    <div class="stat-value highlight-error" id="relErr">0.56%</div>
+    <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Approximate Output</div>
+    <div class="stat-value" id="resApprox">11,008</div>
+    <div class="binary-box" id="binApprox">0010101100000000</div>
   </div>
 </div>
 
-<div class="stat-card" style="margin-top: 12px; border-color: #10b981;">
-  <div style="color: #94a3b8; font-size: 14px;">Estimated Silicon Energy & Area Saved</div>
-  <div class="stat-value highlight-savings" id="savings">~45% Energy Saved 🔋</div>
+<div class="grid" style="margin-top: 12px;">
+  <div class="stat-card">
+    <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Relative Error Distance (RED)</div>
+    <div class="stat-value highlight-error" id="resError">1.05%</div>
+  </div>
+
+  <div class="stat-card">
+    <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Estimated Hardware Energy Saved</div>
+    <div class="stat-value highlight-savings" id="resEnergy">~75%</div>
+  </div>
 </div>
 
 <script>
-function toPow2(x) {
-  return Math.pow(2, Math.round(Math.log2(x)));
+const sliderA = document.getElementById('sliderA');
+const sliderB = document.getElementById('sliderB');
+const archSelect = document.getElementById('archSelect');
+
+function nearestPowerOf2(n) {
+  if (n <= 0) return 1;
+  const p = Math.round(Math.log2(n));
+  return Math.pow(2, p);
 }
 
-function calcRoBA(a, b) {
-  let Ar = toPow2(a);
-  let Br = toPow2(b);
-  return Ar * b + Br * a - Ar * Br;
+function lod(n) {
+  if (n === 0) return 0;
+  return Math.floor(Math.log2(n));
 }
 
-function calcTrunc(a, b, k) {
-  let mask = ~((1 << k) - 1) & 0xFF;
-  return (a & mask) * (b & mask);
+function drumMultiply(a, b, k = 4) {
+  if (a === 0 || b === 0) return 0;
+  const l1 = lod(a);
+  const l2 = lod(b);
+  
+  const s1 = Math.max(0, l1 - k + 1);
+  const s2 = Math.max(0, l2 - k + 1);
+  
+  const m1 = (a >> s1) & ((1 << k) - 1);
+  const m2 = (b >> s2) & ((1 << k) - 1);
+  
+  const mult = m1 * m2;
+  return mult << (s1 + s2);
 }
 
-function calcDRUM(a, b, k) {
-  let l1 = a > 0 ? Math.floor(Math.log2(a)) : 0;
-  let l2 = b > 0 ? Math.floor(Math.log2(b)) : 0;
-  let s1 = Math.max(0, l1 - k + 1);
-  let s2 = Math.max(0, l2 - k + 1);
-  let a_k = (a >> s1) << s1;
-  let b_k = (b >> s2) << s2;
-  return a_k * b_k;
-}
+function compute() {
+  const a = parseInt(sliderA.value);
+  const b = parseInt(sliderB.value);
+  const arch = archSelect.value;
 
-function update() {
-  let a = parseInt(document.getElementById('sliderA').value);
-  let b = parseInt(document.getElementById('sliderB').value);
-  let algo = document.getElementById('algoSelect').value;
+  document.getElementById('valA').innerText = a + " (0b" + a.toString(2).padStart(8, '0') + ")";
+  document.getElementById('valB').innerText = b + " (0b" + b.toString(2).padStart(8, '0') + ")";
 
-  document.getElementById('valA').innerText = a;
-  document.getElementById('valB').innerText = b;
-  document.getElementById('binA').innerText = a.toString(2).padStart(8, '0');
-  document.getElementById('binB').innerText = b.toString(2).padStart(8, '0');
-
-  let exact = a * b;
+  const exact = a * b;
   let approx = exact;
-  let savings = "0% (Standard Exact Chip)";
+  let energySaved = "0%";
 
-  if (algo === 'trunc4') {
-    approx = calcTrunc(a, b, 4);
-    savings = "~42% Energy & Transistors Saved 🔋";
-  } else if (algo === 'roba') {
-    approx = Math.max(0, calcRoBA(a, b));
-    savings = "~68% Energy & Transistors Saved 🔋⚡";
-  } else if (algo === 'drum4') {
-    approx = calcDRUM(a, b, 4);
-    savings = "~55% Energy & Transistors Saved 🔋⚡";
+  if (arch === 'exact') {
+    approx = exact;
+    energySaved = "0% (Baseline)";
+  } else if (arch === 'trunc4') {
+    approx = exact & (~0x0F);
+    energySaved = "~45%";
+  } else if (arch === 'roba') {
+    const ar = nearestPowerOf2(a);
+    const br = nearestPowerOf2(b);
+    approx = (ar * b) + (br * a) - (ar * br);
+    if (approx < 0) approx = 0;
+    energySaved = "~75%";
+  } else if (arch === 'drum4') {
+    approx = drumMultiply(a, b, 4);
+    energySaved = "~58%";
   }
 
-  let err = Math.abs(approx - exact);
-  let rel = exact > 0 ? (err / exact * 100).toFixed(2) : "0.00";
+  const err = exact === 0 ? 0 : Math.abs(approx - exact) / exact * 100;
 
-  document.getElementById('exactRes').innerText = exact.toLocaleString();
-  document.getElementById('approxRes').innerText = approx.toLocaleString();
-  document.getElementById('errDist').innerText = err.toLocaleString();
-  document.getElementById('relErr').innerText = rel + "%";
-  document.getElementById('savings').innerText = savings;
+  document.getElementById('resExact').innerText = exact.toLocaleString();
+  document.getElementById('binExact').innerText = exact.toString(2).padStart(16, '0');
+
+  document.getElementById('resApprox').innerText = approx.toLocaleString();
+  document.getElementById('binApprox').innerText = approx.toString(2).padStart(16, '0');
+
+  document.getElementById('resError').innerText = err.toFixed(2) + "%";
+  document.getElementById('resEnergy').innerText = energySaved;
 }
 
-document.getElementById('sliderA').addEventListener('input', update);
-document.getElementById('sliderB').addEventListener('input', update);
-document.getElementById('algoSelect').addEventListener('change', update);
-update();
+sliderA.addEventListener('input', compute);
+sliderB.addEventListener('input', compute);
+archSelect.addEventListener('change', compute);
+compute();
 </script>
-
 </body>
 </html>

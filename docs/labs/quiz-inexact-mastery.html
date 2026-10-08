@@ -2,129 +2,217 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inexact Computing Mastery Quiz</title>
 <style>
+  :root {
+    --primary: #00897b;
+    --primary-light: #26a69a;
+    --primary-dark: #00695c;
+    --accent: #ff7043;
+    --bg: #ffffff;
+    --card-bg: #f8fafc;
+    --card-border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --btn-bg: #f1f5f9;
+    --btn-border: #cbd5e1;
+    --correct-bg: #e6f4ea;
+    --correct-border: #00897b;
+    --correct-text: #004d40;
+    --wrong-bg: #fbe9e7;
+    --wrong-border: #ff7043;
+    --wrong-text: #bf360c;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #26a69a;
+      --primary-light: #4db6ac;
+      --primary-dark: #00897b;
+      --accent: #ff7043;
+      --bg: #1e293b;
+      --card-bg: #0f172a;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --btn-bg: #1e293b;
+      --btn-border: #334155;
+      --correct-bg: #004d40;
+      --correct-border: #26a69a;
+      --correct-text: #e0f2f1;
+      --wrong-bg: #4a1508;
+      --wrong-border: #ff7043;
+      --wrong-text: #ffccbc;
+    }
+  }
+
+  * { box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #0f172a;
-    color: #f8fafc;
-    border-radius: 12px;
-  }
-  h2 { color: #38bdf8; }
-  .quiz-card {
-    background: #1e293b;
-    padding: 20px;
+    margin: 10px auto;
+    padding: 16px;
+    background: var(--bg);
+    color: var(--text);
     border-radius: 8px;
-    margin-bottom: 20px;
-    border: 1px solid #334155;
+    border: 1px solid var(--card-border);
   }
-  .q-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #e2e8f0; }
+  h2 {
+    color: var(--primary);
+    margin-top: 0;
+    font-size: 1.4rem;
+  }
+  p.subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+  }
+  .quiz-card {
+    background: var(--card-bg);
+    padding: 18px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    border: 1px solid var(--card-border);
+  }
+  .q-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
   .option-btn {
     display: block;
     width: 100%;
     text-align: left;
     padding: 12px 16px;
     margin-bottom: 8px;
-    background: #334155;
-    color: #f8fafc;
-    border: 1px solid #475569;
+    background: var(--btn-bg);
+    color: var(--text);
+    border: 1px solid var(--btn-border);
     border-radius: 6px;
     cursor: pointer;
-    font-size: 15px;
-    transition: background 0.2s;
+    font-size: 14.5px;
+    font-family: inherit;
+    transition: all 0.2s ease;
   }
-  .option-btn:hover { background: #475569; }
-  .correct { background: #065f46 !important; border-color: #10b981 !important; }
-  .wrong { background: #881337 !important; border-color: #f43f5e !important; }
-  .feedback { margin-top: 10px; font-size: 14px; display: none; line-height: 1.5; }
+  .option-btn:hover:not([disabled]) {
+    border-color: var(--primary);
+    background: var(--card-border);
+  }
+  .correct {
+    background: var(--correct-bg) !important;
+    border-color: var(--correct-border) !important;
+    color: var(--correct-text) !important;
+    font-weight: 600;
+  }
+  .wrong {
+    background: var(--wrong-bg) !important;
+    border-color: var(--wrong-border) !important;
+    color: var(--wrong-text) !important;
+  }
+  .feedback {
+    margin-top: 10px;
+    font-size: 14px;
+    display: none;
+    line-height: 1.5;
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: var(--btn-bg);
+    border-left: 4px solid var(--primary);
+  }
   .score-box {
     text-align: center;
     padding: 20px;
-    background: #1e293b;
+    background: var(--card-bg);
     border-radius: 8px;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
-    color: #38bdf8;
+    color: var(--primary);
+    border: 1px solid var(--card-border);
+    margin-top: 16px;
   }
 </style>
 </head>
 <body>
 
 <h2>🧩 Inexact Computing Mastery Quiz</h2>
-<p>Test your knowledge on why computers make intentional mistakes to save energy!</p>
+<p class="subtitle">Test your knowledge on why digital circuits make intentional mathematical approximations to save massive silicon energy!</p>
 
 <div class="quiz-card" id="q1">
-  <div class="q-title">1. Which of the following applications is LEAST suitable for approximate computing?</div>
-  <button class="option-btn" onclick="check(1, 0, false)">A) Instagram facial filter and portrait blur</button>
-  <button class="option-btn" onclick="check(1, 1, false)">B) AI Image Classifier (recognizing cats vs dogs)</button>
-  <button class="option-btn" onclick="check(1, 2, true)">C) Bank balance transaction database</button>
-  <button class="option-btn" onclick="check(1, 3, false)">D) Video game particle splash simulation</button>
-  <div class="feedback" id="fb1"></div>
+  <div class="q-title">1. Which application is LEAST suitable for approximate computing?</div>
+  <button class="option-btn" onclick="check(1, 0, false)">A. Real-time video game physics & rendering</button>
+  <button class="option-btn" onclick="check(1, 1, true)">B. Bank account balance calculations</button>
+  <button class="option-btn" onclick="check(1, 2, false)">C. Convolutional Neural Network (CNN) image classification</button>
+  <button class="option-btn" onclick="check(1, 3, false)">D. Audio noise reduction and speech recognition</button>
+  <div class="feedback" id="f1"></div>
 </div>
 
 <div class="quiz-card" id="q2">
-  <div class="q-title">2. If an approximate circuit has a Mean Relative Error Distance (MRED) of 0.8%, what does this mean?</div>
-  <button class="option-btn" onclick="check(2, 0, false)">A) It fails completely 99.2% of the time</button>
-  <button class="option-btn" onclick="check(2, 1, true)">B) On average, its answer is off by only 0.8% of the true value</button>
-  <button class="option-btn" onclick="check(2, 2, false)">C) It only works on numbers smaller than 0.8</button>
-  <button class="option-btn" onclick="check(2, 3, false)">D) It uses 0.8% less energy</button>
-  <div class="feedback" id="fb2"></div>
+  <div class="q-title">2. Why can neural networks and human eyes tolerate approximate arithmetic?</div>
+  <button class="option-btn" onclick="check(2, 0, false)">A. Because pixels are always binary 0 or 1</button>
+  <button class="option-btn" onclick="check(2, 1, false)">B. Because digital multipliers are completely free</button>
+  <button class="option-btn" onclick="check(2, 2, true)">C. Because perception and deep learning weights have inherent error tolerance</button>
+  <button class="option-btn" onclick="check(2, 3, false)">D. Because exact math creates compiler errors</button>
+  <div class="feedback" id="f2"></div>
 </div>
 
 <div class="quiz-card" id="q3">
-  <div class="q-title">3. Why do human eyes fail to notice small arithmetic errors in image filtering?</div>
-  <button class="option-btn" onclick="check(3, 0, false)">A) Because computer screens hide errors automatically</button>
-  <button class="option-btn" onclick="check(3, 1, true)">B) Human perception has limits and smooths out tiny micro-pixel variations</button>
-  <button class="option-btn" onclick="check(3, 2, false)">C) Exact math is actually uglier than approximate math</button>
-  <button class="option-btn" onclick="check(3, 3, false)">D) Pixels have no mathematical value</button>
-  <div class="feedback" id="fb3"></div>
+  <div class="q-title">3. What causes the main speed bottleneck (critical path delay) in an exact binary adder?</div>
+  <button class="option-btn" onclick="check(3, 0, true)">A. Carry bit propagation having to ripple all the way from Bit 0 to Bit 15</button>
+  <button class="option-btn" onclick="check(3, 1, false)">B. The clock frequency being too high</button>
+  <button class="option-btn" onclick="check(3, 2, false)">C. Too many AND gates generating partial products</button>
+  <button class="option-btn" onclick="check(3, 3, false)">D. DRAM refresh cycles</button>
+  <div class="feedback" id="f3"></div>
 </div>
 
 <div class="quiz-card" id="q4">
-  <div class="q-title">4. What is the main hardware component that makes exact addition slow in chips?</div>
-  <button class="option-btn" onclick="check(4, 0, true)">A) Carry-propagation chain (waiting for lower bits to finish)</button>
-  <button class="option-btn" onclick="check(4, 1, false)">B) The on/off power button</button>
-  <button class="option-btn" onclick="check(4, 2, false)">C) The color of the silicon wires</button>
-  <button class="option-btn" onclick="check(4, 3, false)">D) The computer fan speed</button>
-  <div class="feedback" id="fb4"></div>
+  <div class="q-title">4. How does the Rounding-Based Multiplier (RoBA) achieve over 70% energy savings?</div>
+  <button class="option-btn" onclick="check(4, 0, false)">A. By turning off the chip power supply</button>
+  <button class="option-btn" onclick="check(4, 1, true)">B. By rounding inputs to powers of two ($2^k$), converting multiplication into simple bit-shifts</button>
+  <button class="option-btn" onclick="check(4, 2, false)">C. By calculating 64-bit Taylor expansions</button>
+  <button class="option-btn" onclick="check(4, 3, false)">D. By running the clock backwards</button>
+  <div class="feedback" id="f4"></div>
 </div>
 
-<div class="score-box" id="scoreBox">Score: 0 / 4 Answered</div>
+<div class="score-box" id="score">
+  Completed: <span id="answered">0</span>/4 questions | Score: <span id="pts">0</span>
+</div>
 
 <script>
-let answers = {};
-let explanations = {
-  1: "Correct! Bank transactions require 100% exact math. Sensory data like video, audio, and AI can easily tolerate tiny approximations.",
-  2: "Correct! MRED measures the average percentage error relative to the exact result.",
-  3: "Correct! The human visual cortex naturally filters out micro-noise, which is why JPEG compression and approximate filters work so well.",
-  4: "Correct! Carry propagation requires the most significant bit to wait for carries from all lower bits. Cutting or approximating this chain makes adders much faster."
+let totalAnswered = 0;
+let points = 0;
+const explanations = {
+  1: "Correct! Banking, cryptography, and medical dosing require strict 100% precision. Audio, vision, and AI are error-resilient.",
+  2: "Correct! Human perceptual limits and neural network statistical distributions naturally filter out minor mathematical noise.",
+  3: "Correct! The serial carry ripple chain forms the longest delay path. Approximate adders cut this chain for 3x speed.",
+  4: "Correct! Multiplying by $2^k$ is a hardware wire shift with zero multiplier logic gates!"
 };
 
 function check(qNum, optIdx, isCorrect) {
-  let card = document.getElementById('q' + qNum);
-  let btns = card.getElementsByClassName('option-btn');
-  for (let b of btns) {
-    b.disabled = true;
-  }
-  if (isCorrect) {
-    btns[optIdx].classList.add('correct');
-    answers[qNum] = 1;
-  } else {
-    btns[optIdx].classList.add('wrong');
-    answers[qNum] = 0;
-  }
-  let fb = document.getElementById('fb' + qNum);
-  fb.style.display = 'block';
-  fb.style.color = isCorrect ? '#34d399' : '#fb7185';
-  fb.innerText = isCorrect ? explanations[qNum] : "Incorrect. " + explanations[qNum];
+  const card = document.getElementById('q' + qNum);
+  const btns = card.querySelectorAll('.option-btn');
+  const fb = document.getElementById('f' + qNum);
+  
+  btns.forEach((btn, idx) => {
+    btn.disabled = true;
+    if (idx === optIdx) {
+      btn.classList.add(isCorrect ? 'correct' : 'wrong');
+    }
+  });
 
-  let totalScore = Object.values(answers).reduce((a, b) => a + b, 0);
-  document.getElementById('scoreBox').innerText = "Score: " + totalScore + " / 4 Correct! " + (totalScore === 4 ? "🎉 Mastery Achieved!" : "");
+  fb.style.display = 'block';
+  if (isCorrect) {
+    fb.innerHTML = '<strong>✅ ' + explanations[qNum] + '</strong>';
+    points++;
+  } else {
+    fb.innerHTML = '<strong>❌ Not quite!</strong> ' + explanations[qNum];
+  }
+
+  totalAnswered++;
+  document.getElementById('answered').innerText = totalAnswered;
+  document.getElementById('pts').innerText = points;
 }
 </script>
-
 </body>
 </html>
