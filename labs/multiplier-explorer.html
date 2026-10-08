@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Interactive Multiplier Explorer</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #0f172a;
+    color: #f8fafc;
+    border-radius: 12px;
+  }
+  h2 { color: #38bdf8; margin-top: 0; }
+  .control-group {
+    background: #1e293b;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  label { font-weight: bold; display: block; margin-bottom: 6px; color: #94a3b8; }
+  input[type="range"] {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    background: #334155;
+    color: #fff;
+    border: 1px solid #475569;
+    font-size: 16px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .stat-card {
+    background: #1e293b;
+    padding: 14px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #334155;
+  }
+  .stat-value {
+    font-size: 26px;
+    font-weight: bold;
+    color: #38bdf8;
+    margin-top: 4px;
+  }
+  .highlight-error { color: #f43f5e; }
+  .highlight-savings { color: #10b981; }
+  .binary-box {
+    font-family: monospace;
+    font-size: 18px;
+    letter-spacing: 2px;
+    margin-top: 10px;
+    background: #090d16;
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h2>🎛️ Interactive Approximate Multiplier Explorer</h2>
+<p>Drag the operand sliders and select an approximation algorithm to see exact vs. approximate math in real time!</p>
+
+<div class="control-group">
+  <label>Operand A: <span id="valA">145</span> (<span id="binA">10010001</span>₂)</label>
+  <input type="range" id="sliderA" min="1" max="255" value="145">
+
+  <label style="margin-top: 12px;">Operand B: <span id="valB">83</span> (<span id="binB">01010011</span>₂)</label>
+  <input type="range" id="sliderB" min="1" max="255" value="83">
+</div>
+
+<div class="control-group">
+  <label>Approximation Algorithm:</label>
+  <select id="algoSelect">
+    <option value="exact">1. Exact Multiplier (0% Error, 0% Energy Saved)</option>
+    <option value="trunc4" selected>2. Truncated LSB-4 (Lower 4 bits discarded)</option>
+    <option value="roba">3. RoBA (Rounding to Nearest Power-of-2)</option>
+    <option value="drum4">4. DRUM-4 (Dynamic Range 4-bit Active Window)</option>
+  </select>
+</div>
+
+<div class="grid">
+  <div class="stat-card">
+    <div style="color: #94a3b8; font-size: 14px;">Exact Result (A × B)</div>
+    <div class="stat-value" id="exactRes">12,035</div>
+  </div>
+  <div class="stat-card">
+    <div style="color: #94a3b8; font-size: 14px;">Inexact Circuit Result</div>
+    <div class="stat-value" id="approxRes" style="color: #fbbf24;">11,968</div>
+  </div>
+  <div class="stat-card">
+    <div style="color: #94a3b8; font-size: 14px;">Absolute Error Distance</div>
+    <div class="stat-value highlight-error" id="errDist">67</div>
+  </div>
+  <div class="stat-card">
+    <div style="color: #94a3b8; font-size: 14px;">Relative Error (%)</div>
+    <div class="stat-value highlight-error" id="relErr">0.56%</div>
+  </div>
+</div>
+
+<div class="stat-card" style="margin-top: 12px; border-color: #10b981;">
+  <div style="color: #94a3b8; font-size: 14px;">Estimated Silicon Energy & Area Saved</div>
+  <div class="stat-value highlight-savings" id="savings">~45% Energy Saved 🔋</div>
+</div>
+
+<script>
+function toPow2(x) {
+  return Math.pow(2, Math.round(Math.log2(x)));
+}
+
+function calcRoBA(a, b) {
+  let Ar = toPow2(a);
+  let Br = toPow2(b);
+  return Ar * b + Br * a - Ar * Br;
+}
+
+function calcTrunc(a, b, k) {
+  let mask = ~((1 << k) - 1) & 0xFF;
+  return (a & mask) * (b & mask);
+}
+
+function calcDRUM(a, b, k) {
+  let l1 = a > 0 ? Math.floor(Math.log2(a)) : 0;
+  let l2 = b > 0 ? Math.floor(Math.log2(b)) : 0;
+  let s1 = Math.max(0, l1 - k + 1);
+  let s2 = Math.max(0, l2 - k + 1);
+  let a_k = (a >> s1) << s1;
+  let b_k = (b >> s2) << s2;
+  return a_k * b_k;
+}
+
+function update() {
+  let a = parseInt(document.getElementById('sliderA').value);
+  let b = parseInt(document.getElementById('sliderB').value);
+  let algo = document.getElementById('algoSelect').value;
+
+  document.getElementById('valA').innerText = a;
+  document.getElementById('valB').innerText = b;
+  document.getElementById('binA').innerText = a.toString(2).padStart(8, '0');
+  document.getElementById('binB').innerText = b.toString(2).padStart(8, '0');
+
+  let exact = a * b;
+  let approx = exact;
+  let savings = "0% (Standard Exact Chip)";
+
+  if (algo === 'trunc4') {
+    approx = calcTrunc(a, b, 4);
+    savings = "~42% Energy & Transistors Saved 🔋";
+  } else if (algo === 'roba') {
+    approx = Math.max(0, calcRoBA(a, b));
+    savings = "~68% Energy & Transistors Saved 🔋⚡";
+  } else if (algo === 'drum4') {
+    approx = calcDRUM(a, b, 4);
+    savings = "~55% Energy & Transistors Saved 🔋⚡";
+  }
+
+  let err = Math.abs(approx - exact);
+  let rel = exact > 0 ? (err / exact * 100).toFixed(2) : "0.00";
+
+  document.getElementById('exactRes').innerText = exact.toLocaleString();
+  document.getElementById('approxRes').innerText = approx.toLocaleString();
+  document.getElementById('errDist').innerText = err.toLocaleString();
+  document.getElementById('relErr').innerText = rel + "%";
+  document.getElementById('savings').innerText = savings;
+}
+
+document.getElementById('sliderA').addEventListener('input', update);
+document.getElementById('sliderB').addEventListener('input', update);
+document.getElementById('algoSelect').addEventListener('change', update);
+update();
+</script>
+
+</body>
+</html>
