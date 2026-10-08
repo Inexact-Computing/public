@@ -10,12 +10,13 @@
     --primary-light: #26a69a;
     --primary-dark: #00695c;
     --accent: #ff7043;
-    --bg: #ffffff;
+    --accent-dark: #f4511e;
+    --bg: transparent;
     --card-bg: #f8fafc;
     --card-border: #e2e8f0;
     --text: #1e293b;
     --text-muted: #64748b;
-    --btn-bg: #f1f5f9;
+    --btn-bg: #ffffff;
     --btn-border: #cbd5e1;
     --correct-bg: #e6f4ea;
     --correct-border: #00897b;
@@ -31,12 +32,13 @@
       --primary-light: #4db6ac;
       --primary-dark: #00897b;
       --accent: #ff7043;
-      --bg: #1e293b;
-      --card-bg: #0f172a;
+      --accent-dark: #f4511e;
+      --bg: transparent;
+      --card-bg: #1e293b;
       --card-border: #334155;
       --text: #f8fafc;
       --text-muted: #94a3b8;
-      --btn-bg: #1e293b;
+      --btn-bg: #0f172a;
       --btn-border: #334155;
       --correct-bg: #004d40;
       --correct-border: #26a69a;
@@ -50,33 +52,21 @@
   * { box-sizing: border-box; }
   body {
     font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    max-width: 800px;
-    margin: 10px auto;
-    padding: 16px;
+    margin: 0;
+    padding: 4px;
     background: var(--bg);
     color: var(--text);
-    border-radius: 8px;
-    border: 1px solid var(--card-border);
-  }
-  h2 {
-    color: var(--primary);
-    margin-top: 0;
-    font-size: 1.4rem;
-  }
-  p.subtitle {
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    margin-bottom: 20px;
   }
   .quiz-card {
     background: var(--card-bg);
-    padding: 18px;
+    padding: 16px 18px;
     border-radius: 8px;
-    margin-bottom: 18px;
+    margin-bottom: 14px;
     border: 1px solid var(--card-border);
+    transition: all 0.2s ease;
   }
   .q-title {
-    font-size: 16px;
+    font-size: 15.5px;
     font-weight: 600;
     margin-bottom: 12px;
     color: var(--text);
@@ -85,16 +75,16 @@
     display: block;
     width: 100%;
     text-align: left;
-    padding: 12px 16px;
-    margin-bottom: 8px;
+    padding: 10px 14px;
+    margin-bottom: 7px;
     background: var(--btn-bg);
     color: var(--text);
     border: 1px solid var(--btn-border);
     border-radius: 6px;
     cursor: pointer;
-    font-size: 14.5px;
+    font-size: 14px;
     font-family: inherit;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
   }
   .option-btn:hover:not([disabled]) {
     border-color: var(--primary);
@@ -113,7 +103,7 @@
   }
   .feedback {
     margin-top: 10px;
-    font-size: 14px;
+    font-size: 13.5px;
     display: none;
     line-height: 1.5;
     padding: 10px 14px;
@@ -122,22 +112,36 @@
     border-left: 4px solid var(--primary);
   }
   .score-box {
-    text-align: center;
-    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
     background: var(--card-bg);
     border-radius: 8px;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 15px;
+    font-weight: 600;
     color: var(--primary);
     border: 1px solid var(--card-border);
-    margin-top: 16px;
+    margin-top: 14px;
+  }
+  .reset-btn {
+    background: var(--primary);
+    color: #ffffff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .reset-btn:hover {
+    background: var(--primary-dark);
   }
 </style>
 </head>
 <body>
-
-<h2>🧩 Inexact Computing Mastery Quiz</h2>
-<p class="subtitle">Test your knowledge on why digital circuits make intentional mathematical approximations to save massive silicon energy!</p>
 
 <div class="quiz-card" id="q1">
   <div class="q-title">1. Which application is LEAST suitable for approximate computing?</div>
@@ -169,14 +173,15 @@
 <div class="quiz-card" id="q4">
   <div class="q-title">4. How does the Rounding-Based Multiplier (RoBA) achieve over 70% energy savings?</div>
   <button class="option-btn" onclick="check(4, 0, false)">A. By turning off the chip power supply</button>
-  <button class="option-btn" onclick="check(4, 1, true)">B. By rounding inputs to powers of two ($2^k$), converting multiplication into simple bit-shifts</button>
+  <button class="option-btn" onclick="check(4, 1, true)">B. By rounding inputs to powers of two ($2^k$), converting multiplication into simple wire shifts</button>
   <button class="option-btn" onclick="check(4, 2, false)">C. By calculating 64-bit Taylor expansions</button>
   <button class="option-btn" onclick="check(4, 3, false)">D. By running the clock backwards</button>
   <div class="feedback" id="f4"></div>
 </div>
 
-<div class="score-box" id="score">
-  Completed: <span id="answered">0</span>/4 questions | Score: <span id="pts">0</span>
+<div class="score-box">
+  <div>Completed: <span id="answered">0</span>/4 | Score: <span id="pts">0</span>/4</div>
+  <button class="reset-btn" onclick="resetQuiz()">🔄 Retake Quiz</button>
 </div>
 
 <script>
@@ -186,7 +191,7 @@ const explanations = {
   1: "Correct! Banking, cryptography, and medical dosing require strict 100% precision. Audio, vision, and AI are error-resilient.",
   2: "Correct! Human perceptual limits and neural network statistical distributions naturally filter out minor mathematical noise.",
   3: "Correct! The serial carry ripple chain forms the longest delay path. Approximate adders cut this chain for 3x speed.",
-  4: "Correct! Multiplying by $2^k$ is a hardware wire shift with zero multiplier logic gates!"
+  4: "Correct! Multiplying by 2^k is a hardware wire shift with zero multiplier logic gates!"
 };
 
 function check(qNum, optIdx, isCorrect) {
@@ -212,6 +217,25 @@ function check(qNum, optIdx, isCorrect) {
   totalAnswered++;
   document.getElementById('answered').innerText = totalAnswered;
   document.getElementById('pts').innerText = points;
+}
+
+function resetQuiz() {
+  totalAnswered = 0;
+  points = 0;
+  document.getElementById('answered').innerText = '0';
+  document.getElementById('pts').innerText = '0';
+
+  for (let i = 1; i <= 4; i++) {
+    const card = document.getElementById('q' + i);
+    const btns = card.querySelectorAll('.option-btn');
+    const fb = document.getElementById('f' + i);
+    btns.forEach(btn => {
+      btn.disabled = false;
+      btn.classList.remove('correct', 'wrong');
+    });
+    fb.style.display = 'none';
+    fb.innerHTML = '';
+  }
 }
 </script>
 </body>

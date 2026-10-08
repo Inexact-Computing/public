@@ -58,6 +58,6 @@ Take this quick 4-question interactive check to test your intuition:
 <iframe
   src="../../labs/quiz-inexact-mastery.html"
   title="Inexact Mastery Quiz"
-  style="width: 100%; height: 680px; border: none; background: transparent; margin: 12px 0;"
+  style="width: 100%; height: 820px; border: none; background: transparent; margin: 12px 0;"
   loading="lazy"
 ></iframe>
