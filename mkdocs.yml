@@ -80,6 +80,10 @@ nav:
   - 🧪 Interactive Labs:
       - Labs Overview: labs/README.md
       - Multiplier Explorer: labs/multiplier-explorer.html
+      - Image Filter Sandbox: labs/image-filter-sandbox.html
+      - Adder Carry Propagation: labs/adder-carry-race.html
+      - 4:2 Compressor Playground: labs/compressor-4to2-playground.html
+      - CORDIC Rotation Wheel: labs/cordic-rotation-visualizer.html
       - Inexact Mastery Quiz: labs/quiz-inexact-mastery.html
   - 🗺️ Learning Tracks:
       - Track 1 - Circuit Hacker: tracks/circuit-hacker/ROADMAP.md

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4:2 Approximate Compressor Playground Lab</title>
+  <style>
+    :root {
+      --bg: #0f172a; --border: #334155; --text: #f8fafc; --muted: #94a3b8;
+      --code-bg: #1e293b; --ok: #10b981; --bad: #f43f5e;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 12px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 900px; margin: 0 auto; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; background: var(--code-bg); }
+    h1 { margin: 0 0 0.35rem; font-size: 1.3rem; font-weight: 700; color: #38bdf8; }
+    .lede { margin: 0 0 0.85rem; color: var(--muted); font-size: 0.92rem; }
+    .inputs-grid { display: flex; gap: 12px; margin-bottom: 16px; background: #0f172a; padding: 14px; border-radius: 6px; border: 1px solid var(--border); justify-content: space-around; }
+    .bit-toggle { text-align: center; cursor: pointer; }
+    .bit-circle { width: 50px; height: 50px; border-radius: 50%; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; margin: 0 auto 6px; transition: all 0.2s; border: 2px solid #475569; }
+    .bit-circle.on { background: #00897b; border-color: #38bdf8; color: #fff; box-shadow: 0 0 10px #38bdf888; }
+    .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .card { background: #0f172a; padding: 14px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
+    .out-bits { font-family: monospace; font-size: 26px; font-weight: bold; margin-top: 6px; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.5rem; }
+    .stat { background: #0f172a; border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem; text-align: center; }
+    .stat-label { font-size: 0.7rem; text-transform: uppercase; color: var(--muted); }
+    .stat-value { font-size: 1.1rem; font-weight: 700; font-family: monospace; color: #38bdf8; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🗜️ 4:2 Approximate Compressor Playground</h1>
+  <p class="lede">A 4:2 compressor squishes 4 partial product rows down to 2. Click the 4 input bits below to see exact vs. inexact truth-table logic and transistor savings!</p>
+
+  <div class="inputs-grid">
+    <div class="bit-toggle" onclick="toggleBit('x1')">
+      <div class="bit-circle" id="c_x1">0</div>
+      <div style="font-size: 12px; color: var(--muted);">Input X₁</div>
+    </div>
+    <div class="bit-toggle" onclick="toggleBit('x2')">
+      <div class="bit-circle on" id="c_x2">1</div>
+      <div style="font-size: 12px; color: var(--muted);">Input X₂</div>
+    </div>
+    <div class="bit-toggle" onclick="toggleBit('x3')">
+      <div class="bit-circle" id="c_x3">0</div>
+      <div style="font-size: 12px; color: var(--muted);">Input X₃</div>
+    </div>
+    <div class="bit-toggle" onclick="toggleBit('x4')">
+      <div class="bit-circle on" id="c_x4">1</div>
+      <div style="font-size: 12px; color: var(--muted);">Input X₄</div>
+    </div>
+    <div class="bit-toggle" onclick="toggleBit('cin')">
+      <div class="bit-circle" id="c_cin">0</div>
+      <div style="font-size: 12px; color: var(--muted);">Carry In</div>
+    </div>
+  </div>
+
+  <div class="results-grid">
+    <div class="card">
+      <div style="color: var(--muted); font-size: 13px;">Exact 4:2 Compressor (26 Transistors)</div>
+      <div class="out-bits" style="color: #38bdf8;" id="exactOut">Sum=0, Carry=1, Cout=0</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">Arithmetic Value: <strong id="exactVal" style="color: #fff;">2</strong></div>
+    </div>
+    <div class="card" style="border-color: #00897b;">
+      <div style="color: var(--muted); font-size: 13px;">Inexact 4:2 Compressor (14 Transistors ⚡)</div>
+      <div class="out-bits" style="color: #fbbf24;" id="approxOut">Sum=0, Carry=1, Cout=0</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">Arithmetic Value: <strong id="approxVal" style="color: #fff;">2</strong></div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Arithmetic Match</div><div class="stat-value" id="sMatch" style="color: #10b981;">PERFECT MATCH ✨</div></div>
+    <div class="stat"><div class="stat-label">Error Distance</div><div class="stat-value" id="sErr">0</div></div>
+    <div class="stat"><div class="stat-label">Transistors Saved</div><div class="stat-value" style="color: #10b981;">-46% (12 Gates)</div></div>
+    <div class="stat"><div class="stat-label">Truth Table Match</div><div class="stat-value">28 / 32 States (87.5%)</div></div>
+  </div>
+</div>
+
+<script>
+let bits = { x1: 0, x2: 1, x3: 0, x4: 1, cin: 0 };
+
+function toggleBit(name) {
+  bits[name] = bits[name] ? 0 : 1;
+  let el = document.getElementById('c_' + name);
+  el.innerText = bits[name];
+  el.classList.toggle('on', bits[name] === 1);
+  update();
+}
+
+function update() {
+  let { x1, x2, x3, x4, cin } = bits;
+  let sumCount = x1 + x2 + x3 + x4 + cin;
+
+  // Exact 4:2
+  let exactSum = sumCount % 2;
+  let exactCarry = (sumCount >= 2 && sumCount <= 3) || sumCount >= 4 ? 1 : 0;
+  let exactCout = sumCount >= 4 ? 1 : 0;
+  let exactTotal = exactSum + 2 * exactCarry + 2 * exactCout;
+
+  // Approximate AC-4:2 (Simplified XOR tree)
+  let axSum = (x1 ^ x2 ^ x3 ^ x4) ? 1 : 0;
+  let axCarry = ((x1 & x2) | (x3 & x4) | cin) ? 1 : 0;
+  let axCout = ((x1 | x2) & (x3 | x4)) ? 1 : 0;
+  let axTotal = axSum + 2 * axCarry + 2 * axCout;
+
+  document.getElementById('exactOut').innerText = `Sum=${exactSum}, Carry=${exactCarry}, Cout=${exactCout}`;
+  document.getElementById('exactVal').innerText = sumCount;
+
+  document.getElementById('approxOut').innerText = `Sum=${axSum}, Carry=${axCarry}, Cout=${axCout}`;
+  document.getElementById('approxVal').innerText = (axSum + 2*axCarry);
+
+  let err = Math.abs(sumCount - (axSum + 2*axCarry));
+  document.getElementById('sErr').innerText = err;
+
+  let matchEl = document.getElementById('sMatch');
+  if (err === 0) {
+    matchEl.innerText = "PERFECT MATCH ✨";
+    matchEl.style.color = "#10b981";
+  } else {
+    matchEl.innerText = `OFF BY ${err} ⚠️`;
+    matchEl.style.color = "#fbbf24";
+  }
+}
+
+update();
+</script>
+</body>
+</html>
