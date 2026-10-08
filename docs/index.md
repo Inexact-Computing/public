@@ -6,10 +6,10 @@ Welcome to the **Inexact Computing Learning and Research Portal**, an open-acces
 graph TD
     A[Inexact Computing Hub] --> B[🎓 Fundamentals: Intuition & Math]
     A --> C[🌉 Bridge: Pixels & AI Resilience]
-    A --> D[⚙️ Circuit Taxonomies: Multipliers, Adders & CORDIC]
+    A --> D[⚙️ Circuit Taxonomies: 7 Primitive Families]
     B --> E[Why Inexact? + Error Metrics]
     C --> F[Perceptual Noise + Neural Nets]
-    D --> G[Integrated Interactive Labs]
+    D --> G[Multipliers, Adders, CORDIC, Dividers, Transforms, Memory, AI Accelerators]
 ```
 
 ---
@@ -17,20 +17,21 @@ graph TD
 ## 🎯 Objectives & Scope
 
 Approximate computing trades tiny, bounded amounts of mathematical accuracy for massive reductions in power consumption, silicon area, and critical path delay in error-resilient applications:
-- **Artificial Intelligence & Deep Learning** (Conv2D, GEMM, Transformer attention)
-- **Computer Vision & Image Processing** (Filtering, Edge detection, JPEG/HEVC compression)
+- **Artificial Intelligence & Deep Learning** (Conv2D, GEMM, Transformer attention, Systolic Arrays)
+- **Computer Vision & Image Processing** (Filtering, Edge detection, JPEG/HEVC DCT compression)
 - **Signal Processing & Audio** (FFT, FIR filters, CORDIC coordinate rotations)
+- **Low-Power Memory Systems** (Voltage-scaled SRAM caches, Refresh-relaxed DRAM)
 
 ---
 
-## 📚 Interactive Navigation Guide
+## 📚 Navigation Guide
 
 | Section | Description |
 | :--- | :--- |
-| [**Glossary**](glossary.md) | Plain-English definitions of core inexact computing concepts and acronyms. |
+| [**Glossary**](glossary.md) | Plain-English definitions of core inexact computing concepts, acronyms, and terms. |
 | [**Fundamentals**](fundamentals/why-approximate-computing.md) | The 1% Rule, Error Metrics Made Easy (pizza/dollar analogies), and mathematical error bounds. |
 | [**Bridge to Real World**](bridge/human-eyes-and-pixels.md) | Why human eyes forgive pixel noise (includes live **Image Filter Sandbox**) and why AI models thrive on inexact arithmetic. |
-| [**Circuit Taxonomies**](taxonomy/multipliers.md) | Complete architectural guides with live embedded interactive labs for **Multipliers**, **Adders**, and **CORDIC**. |
+| [**Circuit Taxonomies**](taxonomy/multipliers.md) | Architectural guides and IEEE citations across 7 core hardware families: **Multipliers**, **Adders**, **CORDIC**, **Dividers & Squarers**, **Transforms (DCT/FFT)**, **Memory & Storage**, and **AI Accelerators**. |
 
 ---
 

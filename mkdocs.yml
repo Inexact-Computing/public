@@ -78,3 +78,7 @@ nav:
       - Approximate Multipliers: taxonomy/multipliers.md
       - Approximate Adders: taxonomy/adders.md
       - Approximate CORDIC: taxonomy/cordic.md
+      - Dividers & Square Rooters: taxonomy/dividers.md
+      - Transforms (DCT & FFT): taxonomy/transforms.md
+      - Memory & Storage: taxonomy/memory.md
+      - AI Accelerators & Systolic Arrays: taxonomy/accelerators.md

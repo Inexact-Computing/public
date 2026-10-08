@@ -53,3 +53,16 @@ graph TD
 ### 2. Scale-Factor ($K$) Approximation
 - Conventional CORDIC scales the final vector magnitude by $K = \prod \frac{1}{\sqrt{1+2^{-2i}}} \approx 0.60725$.
 - Approximate CORDIC replaces this multiplier step with a trivial shift-and-add: $K \approx \frac{5}{8} = 0.625 = 2^{-1} + 2^{-3}$ (only $2.9\%$ error, zero multiplier hardware).
+
+---
+
+## 📚 Primary Literature & IEEE Citations
+
+For researchers and students exploring original derivations and FPGA/ASIC hardware implementations:
+
+- **Fully Parallel Approximate CORDIC**:  
+  P. K. Meher et al., *"Algorithm and Design of a Fully Parallel Approximate Coordinate Rotation Digital Computer"*, IEEE Transactions on Multi-Scale Computing Systems (TMSCS), [IEEE Xplore (DOI: 10.1109/TMSCS.2017.2696003)](https://doi.org/10.1109/TMSCS.2017.2696003).
+- **Scaling-Free Folded Hyperbolic CORDIC**:  
+  Y. Li et al., *"An Efficient Scaling-Free Folded Hyperbolic CORDIC Design Using a Novel Low-Complexity Recurrence"*, IEEE Transactions on Very Large Scale Integration (VLSI) Systems, [IEEE Xplore (DOI: 10.1109/TVLSI.2023.3281078)](https://doi.org/10.1109/TVLSI.2023.3281078).
+- **Angle-Quantized CORDIC for Edge Computing**:  
+  Y. Gao et al., *"A Configurable CORDIC and p-SADIC Fusion Architecture for Nonlinear Edge Computing"*, IEEE ICICM, [IEEE Xplore (DOI: 10.1109/icicm63644.2024.10814567)](https://doi.org/10.1109/icicm63644.2024.10814567).

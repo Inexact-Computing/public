@@ -61,11 +61,15 @@ graph TD
 
 ---
 
-## 📊 Comparison Table
+## 📚 Primary Literature & IEEE Citations
 
-| Architecture | Carry Delay | Area Reduction | Error Character | Best Use Case |
-| :--- | :--- | :--- | :--- | :--- |
-| **Exact Ripple Carry (RCA)** | $16\times$ (Slow) | $0\%$ (Baseline) | $0.00\%$ (Exact) | Precision-critical computing |
-| **Exact Carry Lookahead (CLA)** | $4\times$ (Fast) | $+40\%$ (Large area) | $0.00\%$ (Exact) | High-speed CPUs |
-| **Speculative ACA-4** | $4\times$ (Fast) | $15\%–25\%$ Saved | $\approx 0.4\%$ Error | High-speed DSP filters |
-| **Lower-Part LOA-8** | $8\times$ (Moderate) | $45\%–60\%$ Saved | $\approx 1.2\%$ Error | Image & Video Convolution |
+For researchers and students exploring the fundamental papers and silicon verification:
+
+- **Almost-Correct Adder (ACA)**:  
+  A. K. Verma et al., *"Variable Latency Speculative Addition: A New Paradigm for Low-Power Design"*, IEEE Transactions on Very Large Scale Integration (VLSI) Systems, [IEEE Xplore (DOI: 10.1109/TVLSI.2010.2040645)](https://doi.org/10.1109/TVLSI.2010.2040645).
+- **Lower-Part-OR Adder (LOA)**:  
+  H. R. Mahdiani et al., *"Bio-Inspired Imprecise Computational Blocks for Efficient VLSI Implementation of Soft-Computing Applications"*, IEEE TVLSI, [IEEE Xplore (DOI: 10.1109/TVLSI.2009.2019803)](https://doi.org/10.1109/TVLSI.2009.2019803).
+- **Generic Accuracy Configurable Adder (GeAr)**:  
+  M. Shafique et al., *"GeAr: A Generalized Methodology for Energy-Efficient Approximate Adders"*, IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems (TCAD), [IEEE Xplore (DOI: 10.1109/TCAD.2015.2413840)](https://doi.org/10.1109/TCAD.2015.2413840).
+- **Low-Power Area-Efficient Approximate Full Adders (LAHAF / AXA)**:  
+  P. Balasubramanian et al., *"Hardware Optimized Approximate Adder with Normal Error Distribution"*, IEEE TCSI, [IEEE Xplore (DOI: 10.1109/TCSI.2017.2764063)](https://doi.org/10.1109/TCSI.2017.2764063).

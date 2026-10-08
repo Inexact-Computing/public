@@ -48,7 +48,7 @@ Try dragging the operand sliders below to compare how **Exact**, **Truncated**, 
 graph TD
     M[Approximate Multipliers] --> F1[1. Truncation & Segmentation]
     M --> F2[2. Inexact Compressors]
-    M --> F3[3. Power-of-Two Rounding]
+    M --> F3[3. Power-of-2 Rounding]
     M --> F4[4. Logarithmic Arithmetic]
 
     F1 --> D1[Fixed-Width & DRUM]
@@ -84,12 +84,17 @@ Click the 4 input bits below to see how an approximate 4:2 compressor replaces c
 
 ---
 
-## 📊 Comparison Summary (FreePDK45 @ 1 GHz)
+## 📚 Primary Literature & IEEE Citations
 
-| Design | Strategy | Area ($\mu\text{m}^2$) | Delay (ns) | Power ($\mu\text{W}$) | Energy Saved | MRED (%) |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Exact Wallace** | Standard 100% exact | $1,240$ | $0.98$ | $850$ | $0\%$ (Baseline) | $0.00\%$ |
-| **AC-4:2** | Inexact compressors | $890$ | $0.82$ | $560$ | **$34\%$ Saved** | $0.42\%$ |
-| **DRUM-6** | Dynamic 6-bit window | $680$ | $0.74$ | $390$ | **$54\%$ Saved** | $1.85\%$ |
-| **TOSAM** | Truncation + Rounding | $540$ | $0.70$ | $320$ | **$62\%$ Saved** | $2.94\%$ |
-| **RoBA** | Power-of-2 Rounding | $420$ | $0.62$ | $210$ | **$75\%$ Saved** | $6.21\%$ |
+For researchers and students exploring original peer-reviewed proofs and silicon measurements:
+
+- **Dynamic Range Multipliers (DRUM)**:  
+  S. Hashemi et al., *"DRUM: A Dynamic Range Unbiased Multiplier for Approximate Applications"*, IEEE/ACM ICCAD, [IEEE Xplore (DOI: 10.1109/ICCAD.2015.7372600)](https://doi.org/10.1109/ICCAD.2015.7372600).
+- **Rounding-Based Multipliers (RoBA)**:  
+  R. Zendegani et al., *"RoBA Multiplier: A High-Performance Approximate Multiplier for Energy-Efficient DSP Applications"*, IEEE TVLSI, [IEEE Xplore (DOI: 10.1109/TVLSI.2016.2603348)](https://doi.org/10.1109/TVLSI.2016.2603348).
+- **Compressor-Based Approximate Multipliers (AC-4:2)**:  
+  P. Kulkarni et al., *"A Design Approach for Compressor-Based Approximate Multipliers"*, IEEE VLSI Design, [IEEE Xplore (DOI: 10.1109/vlsid.2015.41)](https://doi.org/10.1109/vlsid.2015.41).
+- **Truncation and Rounding Multipliers (TOSAM)**:  
+  H. Saadat et al., *"TOSAM: An Energy-Efficient Truncation- and Rounding-Based Scalable Approximate Multiplier"*, IEEE TVLSI, [IEEE Xplore (DOI: 10.1109/TVLSI.2019.2941219)](https://doi.org/10.1109/TVLSI.2019.2941219).
+- **Logarithmic Multipliers (Dynamic Range ALM / Mitchell)**:  
+  V. M. et al., *"Design of Dynamic Range Approximate Logarithmic Multipliers"*, IEEE TCSI, [IEEE Xplore (DOI: 10.1109/TCSI.2022.3167894)](https://doi.org/10.1109/TCSI.2022.3167894).
