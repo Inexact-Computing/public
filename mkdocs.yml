@@ -1,10 +1,11 @@
 site_name: Inexact Computing Learning & Research Portal
-site_description: Open-access knowledge portal, literature taxonomy, and arithmetic benchmarks for approximate and inexact computing.
+site_description: Open-access living laboratory, literature taxonomy, and arithmetic benchmarks for approximate and inexact computing.
 site_author: SJTU Yongfu Research Group
-site_url: https://inexact-computing.github.io/inexact-learn-public/
+site_url: https://inexact-computing.github.io/public/
+copyright: Prepared by Yongfu Li and research group
 
-repo_name: SJTU-YONGFU-RESEARCH-GRP/inexact-computing-lab
-repo_url: https://github.com/SJTU-YONGFU-RESEARCH-GRP/inexact-computing-lab
+repo_name: Inexact-Computing/public
+repo_url: https://github.com/Inexact-Computing/public
 
 theme:
   name: material
@@ -22,14 +23,20 @@ theme:
         icon: material/brightness-4
         name: Switch to light mode
   features:
-    - navigation.tabs
+    - navigation.instant
+    - navigation.tracking
     - navigation.sections
+    - navigation.expand
     - navigation.top
     - search.suggest
     - search.highlight
     - content.code.copy
 
+extra:
+  generator: false
+
 markdown_extensions:
+  - md_in_html
   - admonition
   - pymdownx.details
   - pymdownx.superfences:
@@ -47,9 +54,13 @@ markdown_extensions:
   - toc:
       permalink: true
 
+extra_css:
+  - stylesheets/vendor/katex/katex.min.css
+  - stylesheets/math.css
+
 extra_javascript:
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
-  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - javascripts/vendor/katex/katex.min.js
+  - javascripts/katex.js
 
 nav:
   - Home: index.md

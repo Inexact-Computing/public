@@ -1,0 +1,31 @@
+/* Equation readability for SFQ Learn (KaTeX + arithmatex) */
+
+.md-typeset .arithmatex {
+  font-size: 1.05em;
+}
+
+/* Display equations: more air, scroll on narrow viewports */
+.md-typeset div.arithmatex {
+  margin: 1.25em 0;
+  padding: 0.65em 0.85em;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--md-code-bg-color);
+  border-radius: 0.35rem;
+  line-height: 1.55;
+  font-size: 1.12em;
+  text-align: center;
+}
+
+.md-typeset span.arithmatex {
+  padding: 0 0.05em;
+}
+
+.md-typeset .katex {
+  color: var(--md-typeset-color);
+  font-size: 1.05em;
+}
+
+.md-typeset div.arithmatex .katex {
+  font-size: 1.12em;
+}
