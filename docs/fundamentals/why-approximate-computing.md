@@ -33,7 +33,7 @@ In these fields, computing exact numbers costs up to **$3\times$ more energy and
 
 Approximate computing (also called *Inexact Computing*) treats mathematical accuracy as a **flexible budget** rather than a fixed rule:
 
-$$\text{Trade } 1\% \text{ Accuracy} \implies \text{Gain } 50\%–70\% \text{ Energy & Speed Savings}$$
+$$\text{Trade } 1\% \text{ Accuracy} \implies 50\% \text{ to } 70\% \text{ Energy \& Delay Reduction}$$
 
 ```
 +-------------------------------------------------------------+
@@ -58,6 +58,6 @@ Take this quick 4-question interactive check to test your intuition:
 <iframe
   src="../../labs/quiz-inexact-mastery.html"
   title="Inexact Mastery Quiz"
-  style="width:100%; height:620px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
+  style="width: 100%; height: 680px; border: none; background: transparent; margin: 12px 0;"
   loading="lazy"
 ></iframe>

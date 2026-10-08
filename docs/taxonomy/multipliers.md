@@ -36,7 +36,7 @@ Try dragging the operand sliders below to compare how **Exact**, **Truncated**, 
 <iframe
   src="../../labs/multiplier-explorer.html"
   title="Interactive Multiplier Explorer"
-  style="width:100%; height:540px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
+  style="width: 100%; height: 560px; border: none; background: transparent; margin: 12px 0;"
   loading="lazy"
 ></iframe>
 
@@ -78,7 +78,7 @@ Click the 4 input bits below to see how an approximate 4:2 compressor replaces c
 <iframe
   src="../../labs/compressor-4to2-playground.html"
   title="4:2 Approximate Compressor Playground"
-  style="width:100%; height:480px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
+  style="width: 100%; height: 500px; border: none; background: transparent; margin: 12px 0;"
   loading="lazy"
 ></iframe>
 

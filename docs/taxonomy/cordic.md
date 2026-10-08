@@ -27,7 +27,7 @@ Experiment with rotating a 2D vector using shift-add iterations below. See how *
 <iframe
   src="../../labs/cordic-rotation-visualizer.html"
   title="CORDIC Angle Rotation Visualizer"
-  style="width:100%; height:460px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
+  style="width: 100%; height: 480px; border: none; background: transparent; margin: 12px 0;"
   loading="lazy"
 ></iframe>
 

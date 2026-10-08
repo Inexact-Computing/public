@@ -27,7 +27,7 @@ Watch the carry signal ripple across a 16-bit adder in real time, and see how ap
 <iframe
   src="../../labs/adder-carry-race.html"
   title="Adder Carry Propagation Race"
-  style="width:100%; height:480px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
+  style="width: 100%; height: 500px; border: none; background: transparent; margin: 12px 0;"
   loading="lazy"
 ></iframe>
 

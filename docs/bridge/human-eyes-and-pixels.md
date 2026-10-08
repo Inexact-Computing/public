@@ -30,7 +30,7 @@ Experience perceptual noise masking for yourself! Choose a test pattern and filt
 <iframe
   src="../../labs/image-filter-sandbox.html"
   title="Interactive Image Filter Sandbox"
-  style="width:100%; height:620px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
+  style="width: 100%; height: 640px; border: none; background: transparent; margin: 12px 0;"
   loading="lazy"
 ></iframe>
 
