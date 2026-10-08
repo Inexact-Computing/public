@@ -34,7 +34,7 @@ In an exact multiplier, every column must propagate carry bits from right to lef
 Try dragging the operand sliders below to compare how **Exact**, **Truncated**, **RoBA**, and **DRUM** multipliers calculate answers in real time:
 
 <iframe
-  src="../labs/multiplier-explorer.html"
+  src="../../labs/multiplier-explorer.html"
   title="Interactive Multiplier Explorer"
   style="width:100%; height:540px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
   loading="lazy"
@@ -76,7 +76,7 @@ graph TD
 Click the 4 input bits below to see how an approximate 4:2 compressor replaces complex XOR gates with fast logic while maintaining $87.5\%$ exact truth-table matches:
 
 <iframe
-  src="../labs/compressor-4to2-playground.html"
+  src="../../labs/compressor-4to2-playground.html"
   title="4:2 Approximate Compressor Playground"
   style="width:100%; height:480px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
   loading="lazy"

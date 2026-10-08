@@ -25,7 +25,7 @@ $$Z_{i+1} = Z_i - d_i \cdot \theta_i$$
 Experiment with rotating a 2D vector using shift-add iterations below. See how **stopping after 4 or 5 iterations** achieves $<0.3^\circ$ accuracy while cutting hardware latency in half:
 
 <iframe
-  src="../labs/cordic-rotation-visualizer.html"
+  src="../../labs/cordic-rotation-visualizer.html"
   title="CORDIC Angle Rotation Visualizer"
   style="width:100%; height:460px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
   loading="lazy"

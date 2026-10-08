@@ -28,7 +28,7 @@ graph TD
 Experience perceptual noise masking for yourself! Choose a test pattern and filter kernel below, and test how different approximate multipliers affect picture quality and live **PSNR (dB)** ratings:
 
 <iframe
-  src="../labs/image-filter-sandbox.html"
+  src="../../labs/image-filter-sandbox.html"
   title="Interactive Image Filter Sandbox"
   style="width:100%; height:620px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
   loading="lazy"

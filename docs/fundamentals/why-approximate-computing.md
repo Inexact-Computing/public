@@ -56,7 +56,7 @@ $$\text{Trade } 1\% \text{ Accuracy} \implies \text{Gain } 50\%–70\% \text{ En
 Take this quick 4-question interactive check to test your intuition:
 
 <iframe
-  src="../labs/quiz-inexact-mastery.html"
+  src="../../labs/quiz-inexact-mastery.html"
   title="Inexact Mastery Quiz"
   style="width:100%; height:620px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
   loading="lazy"
