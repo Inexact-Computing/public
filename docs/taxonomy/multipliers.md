@@ -2,30 +2,37 @@
 
 Multipliers are the heaviest power and area consumers in digital processors. In modern digital signal processors (DSPs) and AI chips, **over 70% of arithmetic energy is spent inside multiplier arrays**.
 
-This guide breaks down how approximate multipliers work, the main microarchitectural families, and includes live interactive lab sandboxes!
+This comprehensive guide breaks down how exact multipliers work, where the power bottlenecks live, and how approximate multiplier microarchitectures slash silicon energy by up to $75\%$.
 
 ---
 
-## 🔬 How Multipliers Work (And Why They're Heavy)
+## 🔬 Anatomy of a Hardware Multiplier
 
-When you multiply two $N$-bit numbers (like two 16-bit numbers), the hardware performs two main steps:
-1. **Partial Product Generation**: Generates an $N \times N$ matrix of bits ($16 \times 16 = 256$ bits) using `AND` gates.
-2. **Partial Product Reduction**: Adds all 256 bits together using tall adder trees (Wallace or Dadda trees).
+Multiplying two $N$-bit unsigned binary numbers ($A = \sum_{i=0}^{N-1} a_i 2^i$ and $B = \sum_{j=0}^{N-1} b_j 2^j$) in hardware consists of three distinct pipeline stages:
 
-```
-        1 0 0 1  (A = 9)
-      × 1 0 1 1  (B = 11)
-      ---------
-        1 0 0 1  <-- Row 0
-      1 0 0 1    <-- Row 1
-    0 0 0 0      <-- Row 2
-  1 0 0 1        <-- Row 3
-  -------------
-  1 1 0 0 0 1 1  (Sum = 99)
+```mermaid
+graph TD
+    In[Operands A & B] --> PPG[Stage 1: Partial Product Generation]
+    PPG --> PPR[Stage 2: Partial Product Reduction Tree]
+    PPR --> CPA[Stage 3: Vector Merging Adder CPA]
+    CPA --> Out[Product Output P = A x B]
+
+    PPG -.->|Exact: N^2 AND gates or Radix-4 Booth| S1[256 Partial Products for 16-bit]
+    PPR -.->|Exact: Wallace or Dadda Tree| S2[Compresses matrix rows to 2 rows]
+    CPA -.->|Exact: Carry Lookahead Adder| S3[Final 2-input addition]
 ```
 
-In an exact multiplier, every column must propagate carry bits from right to left.
-**Approximate multipliers simplify this matrix by truncating lower columns, rounding numbers, or simplifying compressor gates!**
+### Stage 1: Partial Product Generation (PPG)
+- **Standard Array**: An $N \times N$ matrix of bits ($16 \times 16 = 256$ bits) is generated using simple `AND` gates ($p_{i,j} = a_i \cdot b_j$).
+- **Radix-4 Modified Booth Encoding (MBE)**: Groups multiplier bits in triplets $(b_{2i+1}, b_{2i}, b_{2i-1})$ to encode multiples $\{0, \pm 1A, \pm 2A\}$, reducing the number of partial product rows from $N$ to $N/2$ (8 rows for 16-bit).
+
+### Stage 2: Partial Product Reduction (PPR)
+The tall partial product matrix is compressed down to just two rows using layers of **Full Adders (3:2 compressors)** and **4:2 Compressors**:
+- **Wallace Tree**: Compresses as aggressively as possible at every stage to minimize total layer count ($\mathcal{O}(\log_{1.5} N)$).
+- **Dadda Tree**: Postpones compression to minimize the total number of full adders required, saving silicon area.
+
+### Stage 3: Vector Merging (Final CPA)
+The final two compressed rows are added together using a fast **Carry-Propagate Adder (CPA)** (e.g. Kogge-Stone or Carry-Lookahead) to produce the final $2N$-bit product.
 
 ---
 
@@ -42,32 +49,32 @@ Try dragging the operand sliders below to compare how **Exact**, **Truncated**, 
 
 ---
 
-## 🏛️ The Four Main Approximate Multiplier Families
+## 🏛️ The Four Core Approximate Multiplier Architectures
 
 ```mermaid
 graph TD
-    M[Approximate Multipliers] --> F1[1. Truncation & Segmentation]
-    M --> F2[2. Inexact Compressors]
-    M --> F3[3. Power-of-2 Rounding]
+    M[Approximate Multipliers] --> F1[1. Inexact Reduction Compressors]
+    M --> F2[2. Dynamic Windowing DRUM]
+    M --> F3[3. Power-of-2 Rounding RoBA]
     M --> F4[4. Logarithmic Arithmetic]
 
-    F1 --> D1[Fixed-Width & DRUM]
-    F2 --> D2[AC-4:2 & Dadda-Ax]
-    F3 --> D3[RoBA & Mitchell]
-    F4 --> D4[REALM & Piecewise Log]
+    F1 --> D1[AC-4:2: 14T logic replacing 26T XOR trees]
+    F2 --> D2[LOD extracts k-bit active slice; 60% area saved]
+    F3 --> D3[A x B approx Ar*B + Br*A - Ar*Br using shifts only]
+    F4 --> D4[Mitchell & REALM: log2(A) + log2(B)]
 ```
 
-### 1. Dynamic Range Unbiased Multipliers (DRUM)
-- **The Idea**: Large numbers rarely use all 16 bits at the same time. DRUM uses a **Leading-One Detector (LOD)** to find the most significant `1` bit in both numbers and extracts a small $k$-bit window (e.g. $k=4$).
-- **The Gain**: A $16 \times 16$ multiplier is reduced to a tiny $4 \times 4$ multiplier plus small barrel shifters, cutting silicon area by **$60\%$** with $<1.8\%$ relative error.
+---
 
-### 2. Rounding-Based Multiplier (RoBA)
-- **The Idea**: Multiplying by a power of two ($2, 4, 8, 16, 32, \dots$) is just a wire shift (zero hardware cost!). RoBA rounds both inputs $A$ and $B$ to their nearest powers of two ($A_r = 2^{k_1}, B_r = 2^{k_2}$) and calculates:
-  $$A \times B \approx A_r \cdot B + B_r \cdot A - A_r \cdot B_r$$
-- **The Gain**: Completely eliminates the multiplier array! Uses only shifters and one subtraction, saving up to **$75\%$ energy**.
+### 1. Inexact 4:2 Compressors (AC-4:2)
+Instead of modifying input operands, **compressor-based approximate multipliers** replace the exact 26-transistor 4:2 compressor cells inside the Wallace tree with simplified Boolean logic:
 
-### 3. Inexact Partial Product Compressors (AC-4:2)
-- **The Idea**: Instead of modifying the inputs, we modify the adder cells inside the Wallace tree. An exact 4:2 compressor uses 26 transistors to add 4 bits. An approximate 4:2 compressor uses simplified Boolean logic with **only 14 transistors**.
+$$\text{Exact 4:2 Compressor}: \quad \text{Sum} = x_1 \oplus x_2 \oplus x_3 \oplus x_4 \oplus C_{\text{in}}, \quad 26 \text{ Transistors}$$
+
+$$\text{Approximate AC-4:2}: \quad \text{Sum}' = (x_1 \oplus x_2) \mid (x_3 \oplus x_4), \quad \text{Carry}' = (x_1 \cdot x_2) \mid (x_3 \cdot x_4), \quad 14 \text{ Transistors}$$
+
+- **Transistor Savings**: **$46.2\%$ fewer transistors** per compressor cell.
+- **Truth Table Accuracy**: Correctly matches $28$ out of $32$ input states ($87.5\%$ accuracy), with deviations never exceeding $1$ count.
 
 ---
 
@@ -81,6 +88,31 @@ Click the 4 input bits below to see how an approximate 4:2 compressor replaces c
   style="width: 100%; height: 500px; border: none; background: transparent; margin: 12px 0;"
   loading="lazy"
 ></iframe>
+
+---
+
+### 2. Dynamic Range Unbiased Multiplier (DRUM)
+- **The Concept**: Most numbers in real datasets (audio, image pixels, weights) do not use all 16 bits simultaneously.
+- **Microarchitecture**:
+  1. A **Leading-One Detector (LOD)** scans both inputs $A$ and $B$ to find their highest active bit positions $k_1, k_2$.
+  2. A barrel shifter extracts a small $k$-bit window (e.g. $k=4$).
+  3. A small $4 \times 4$ hardware multiplier multiplies the two slices.
+  4. A final barrel shifter scales the result back by $2^{k_1 + k_2}$.
+- **Result**: Replaces a large $16 \times 16$ multiplier ($256$ product gates) with a tiny $4 \times 4$ core ($16$ product gates), saving **$60\%$ silicon area** with $<1.8\%$ relative error.
+
+---
+
+### 3. Rounding-Based Multiplier (RoBA)
+- **The Concept**: In binary arithmetic, multiplying by a power of two ($2^k$) is a wire shift with **zero logic gates**.
+- **The Formula**: RoBA rounds both inputs $A$ and $B$ to their nearest powers of two ($A_r = 2^{k_1}, B_r = 2^{k_2}$) and calculates:
+  $$A \times B \approx A_r \cdot B + B_r \cdot A - A_r \cdot B_r$$
+- **Hardware Realization**: The multiplier consists of two barrel shifters and a single subtractor. The entire multi-row multiplier array is eliminated, saving **$75\%$ power**.
+
+---
+
+### 4. Truncation & Rounding-Based Scalable Multipliers (TOSAM)
+- Divides inputs into truncated least-significant bits and rounded most-significant bits.
+- Allows hardware designers to dynamically tune accuracy levels from 100% exact down to ultra-low energy mode.
 
 ---
 
