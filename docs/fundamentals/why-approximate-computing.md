@@ -51,19 +51,13 @@ $$\text{Trade } 1\% \text{ Accuracy} \implies \text{Gain } 50\%–70\% \text{ En
 
 ---
 
-## 🎯 Three Places Inexact Computing is Changing the World
+## 🧩 Test Your Understanding
 
-### 1. Smart Wearables & Medical Sensors
-A smartwatch measuring your heartbeat or an EEG brain patch monitoring for epileptic seizures cannot afford a bulky battery. By using approximate arithmetic, the chip can run continuously for **weeks instead of hours** without losing diagnostic accuracy.
+Take this quick 4-question interactive check to test your intuition:
 
-### 2. Edge AI & Self-Driving Cars
-Autonomous drones and cars process dozens of camera frames every second. Inexact neural network accelerators let drones recognize pedestrians and obstacles at **200 frames per second** with ultra-low heat.
-
-### 3. Green Computing & Data Centers
-Training large AI models burns megawatts of electrical power. Using inexact multipliers in tensor cores slashes electricity bills and global carbon emissions.
-
----
-
-## 🚀 What's Next?
-
-Ready to learn how we measure these errors? Jump into [Error Metrics Made Easy](error-metrics-made-easy.md) or test your intuition in the [Interactive Image Filter Sandbox](../labs/image-filter-sandbox.html)!
+<iframe
+  src="../labs/quiz-inexact-mastery.html"
+  title="Inexact Mastery Quiz"
+  style="width:100%; height:620px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
+  loading="lazy"
+></iframe>

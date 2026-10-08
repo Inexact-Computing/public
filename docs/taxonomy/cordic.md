@@ -1,28 +1,55 @@
 # Approximate CORDIC Architectures
 
-The **Coordinate Rotation Digital Computer (CORDIC)** algorithm is widely used to compute trigonometric functions, coordinate rotations, vector magnitudes, and hyperbolic mappings without dedicated multipliers.
+The **Coordinate Rotation Digital Computer (CORDIC)** algorithm is one of the most elegant mathematical tools in digital design. It allows hardware chips to calculate **sine, cosine, tangent, arctan, vector magnitudes, and rotations** without needing complex multiplier circuits!
 
 ---
 
-## 1. Approximation Levers in CORDIC
+## 🧭 How CORDIC Works (Bit-Shifts Only!)
+
+Instead of calculating $\cos(\theta)$ using heavy Taylor series or multipliers, CORDIC rotates a 2D vector $\begin{bmatrix} X \\ Y \end{bmatrix}$ through a sequence of predefined micro-angle steps:
+
+$$\theta_i = \arctan(2^{-i}) \in \{45.0^\circ, 26.56^\circ, 14.04^\circ, 7.12^\circ, 3.58^\circ, 1.79^\circ, 0.89^\circ, 0.45^\circ\}$$
+
+At each iteration step $i$, rotating by $\pm \theta_i$ requires **only a bitwise shift by $i$ positions and one addition/subtraction**:
+
+$$X_{i+1} = X_i - d_i \cdot (Y_i \gg i)$$
+$$Y_{i+1} = Y_i + d_i \cdot (X_i \gg i)$$
+$$Z_{i+1} = Z_i - d_i \cdot \theta_i$$
+
+*(where $d_i = +1$ if the remaining angle $Z_i \ge 0$, and $-1$ otherwise).*
+
+---
+
+## 🧭 Interactive Lab: CORDIC Rotation Wheel
+
+Experiment with rotating a 2D vector using shift-add iterations below. See how **stopping after 4 or 5 iterations** achieves $<0.3^\circ$ accuracy while cutting hardware latency in half:
+
+<iframe
+  src="../labs/cordic-rotation-visualizer.html"
+  title="CORDIC Angle Rotation Visualizer"
+  style="width:100%; height:460px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
+  loading="lazy"
+></iframe>
+
+---
+
+## ⚡ Approximate Levers in CORDIC Hardware
 
 ```mermaid
 graph TD
-    C[Approximate CORDIC] --> M1[1. Angle Iteration Pruning]
-    C --> M2[2. Approximate Internal Adders]
-    C --> M3[3. Scale-Factor (K) Simplification]
-    C --> M4[4. Fully Parallel Unrolled Architectures]
+    C[Approximate CORDIC] --> A1[1. Adaptive Early Termination]
+    C --> A2[2. Shift-Only Scale Factor K]
+    C --> A3[3. Datapath Truncation]
 
-    M1 --> O1[Early termination / Adaptive iterations]
-    M2 --> O2[Speculative adders in X/Y/Z datapath]
-    M3 --> O3[Shift-and-add scale constant approximation]
-    M4 --> O4[Pipelined constant rotation schedule]
+    A1 --> R1[Stop when remaining angle is small, saving 35-50% clock cycles]
+    A2 --> R2[Approximate K=0.60725 with 0.625 using 1 shift + 1 add]
+    A3 --> R3[Use approximate adders in lower bits of X and Y registers]
 ```
 
----
+### 1. Adaptive Early Termination
+- In traditional CORDIC, the hardware unconditionally executes all $N$ iteration steps (e.g. 16 cycles).
+- In **Adaptive Approximate CORDIC**, as soon as the remaining angle $|Z_i| < \epsilon_{\text{threshold}}$ (e.g. $0.5^\circ$), the unit completes immediately, saving **$40\%$ latency and dynamic power**.
 
-## 2. Key Techniques & Design Rules
-
-1. **Iteration Elimination**: High-order iterations ($i > N/2$) contribute micro-rotations. Pruning them reduces latency linearly with bounded phase error.
-2. **Datapath Truncation**: Lower bits in intermediate $X_i, Y_i$ registers experience diminishing significance, enabling lower-part truncation adders.
-3. **Scale Factor ($K$) Folding**: Conventional CORDIC requires multiplying by $K = \prod \frac{1}{\sqrt{1+2^{-2i}}} \approx 0.60725$. Approximate CORDIC merges scaling directly into the terminal shift stages.
+### 2. Scale-Factor ($K$) Approximation
+- Conventional CORDIC scales the final vector magnitude by $K = \prod \frac{1}{\sqrt{1+2^{-2i}}} \approx 0.60725$.
+- Approximate CORDIC replaces this multiplier step with a trivial shift-and-add: $K \approx \frac{5}{8} = 0.625 = 2^{-1} + 2^{-3}$ (only $2.9\%$ error, zero multiplier hardware).

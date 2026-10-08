@@ -23,7 +23,20 @@ graph TD
 
 ---
 
-## 🖼️ The 2D Convolution Mystery
+## 🖼️ Interactive Lab: Image Filter & Noise Sandbox
+
+Experience perceptual noise masking for yourself! Choose a test pattern and filter kernel below, and test how different approximate multipliers affect picture quality and live **PSNR (dB)** ratings:
+
+<iframe
+  src="../labs/image-filter-sandbox.html"
+  title="Interactive Image Filter Sandbox"
+  style="width:100%; height:620px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:#0f172a; margin: 16px 0;"
+  loading="lazy"
+></iframe>
+
+---
+
+## 🖼️ The 2D Convolution Math
 
 When your phone applies a blur filter, an edge detector, or a portrait mode effect, it performs a mathematical operation called **2D Convolution**:
 
@@ -33,11 +46,3 @@ For a 12-Megapixel photo, this means doing **over 100 million multiplications an
 
 - In an **Exact Processor**: Every one of those 100 million multiplications calculates the carry propagation down to bit zero.
 - In an **Inexact Processor (e.g. TOSAM or DRUM)**: Lower bits are truncated, using $60\%$ less energy. The resulting image has a **$\text{PSNR} > 38\text{ dB}$**, meaning the differences are completely invisible to the human eye!
-
----
-
-## 🎧 The Same Thing Happens in Audio
-
-When you listen to Spotify or Apple Music, the audio stream has already discarded high-frequency sound waves that human ears cannot hear (the psychoacoustic model).
-
-Using approximate adders and multipliers in audio filters (such as equalizer bass/treble DSPs) saves battery without degrading acoustic fidelity.
