@@ -69,6 +69,8 @@ nav:
   - Glossary: glossary.md
   - 🎓 Fundamentals:
       - Why Inexact Computing?: fundamentals/why-approximate-computing.md
+      - History & Evolution: fundamentals/history-and-evolution.md
+      - Motivations & Grand Challenges: fundamentals/motivations-and-challenges.md
       - Error Metrics Made Easy: fundamentals/error-metrics-made-easy.md
       - Mathematical Error Bounds: fundamentals/error-metrics.md
       - Approximation Paradigms: fundamentals/approx-paradigms.md

@@ -4,10 +4,10 @@ Welcome to the **Inexact Computing Learning and Research Portal**, an open-acces
 
 ```mermaid
 graph TD
-    A[Inexact Computing Hub] --> B[🎓 Fundamentals: Intuition & Math]
+    A[Inexact Computing Hub] --> B[🎓 Fundamentals: History, Motivations & Math]
     A --> C[🌉 Bridge: Pixels & AI Resilience]
     A --> D[⚙️ Circuit Taxonomies: 7 Primitive Families]
-    B --> E[Why Inexact? + Error Metrics]
+    B --> E[Timeline, Grand Challenges & Error Bounds]
     C --> F[Perceptual Noise + Neural Nets]
     D --> G[Multipliers, Adders, CORDIC, Dividers, Transforms, Memory, AI Accelerators]
 ```
@@ -29,7 +29,7 @@ Approximate computing trades tiny, bounded amounts of mathematical accuracy for 
 | Section | Description |
 | :--- | :--- |
 | [**Glossary**](glossary.md) | Plain-English definitions of core inexact computing concepts, acronyms, and terms. |
-| [**Fundamentals**](fundamentals/why-approximate-computing.md) | The 1% Rule, Error Metrics Made Easy (pizza/dollar analogies), and mathematical error bounds. |
+| [**Fundamentals**](fundamentals/why-approximate-computing.md) | The 1% Rule, [**History & Evolution**](fundamentals/history-and-evolution.md) (from Dennard scaling collapse to Palem's probabilistic computing), [**Motivations & Grand Challenges**](fundamentals/motivations-and-challenges.md) (AI climate crisis, verification nightmares, error containment), and mathematical error bounds. |
 | [**Bridge to Real World**](bridge/human-eyes-and-pixels.md) | Why human eyes forgive pixel noise (includes live **Image Filter Sandbox**) and why AI models thrive on inexact arithmetic. |
 | [**Circuit Taxonomies**](taxonomy/multipliers.md) | Architectural guides and IEEE citations across 7 core hardware families: **Multipliers**, **Adders**, **CORDIC**, **Dividers & Squarers**, **Transforms (DCT/FFT)**, **Memory & Storage**, and **AI Accelerators**. |
 
