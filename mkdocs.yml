@@ -1,5 +1,5 @@
 site_name: Inexact Computing Learning & Research Portal
-site_description: Open-access living laboratory, literature taxonomy, and arithmetic benchmarks for approximate and inexact computing.
+site_description: High-school friendly, open-access living laboratory and interactive educational portal for approximate and inexact arithmetic computing.
 site_author: SJTU Yongfu Research Group
 site_url: https://inexact-computing.github.io/public/
 copyright: Prepared by Yongfu Li and research group
@@ -65,13 +65,25 @@ extra_javascript:
 nav:
   - Home: index.md
   - Glossary: glossary.md
-  - Fundamentals:
-      - Error Metrics & Bounds: fundamentals/error-metrics.md
+  - 🎓 Fundamentals:
+      - Why Inexact Computing?: fundamentals/why-approximate-computing.md
+      - Error Metrics Made Easy: fundamentals/error-metrics-made-easy.md
+      - Mathematical Error Bounds: fundamentals/error-metrics.md
       - Approximation Paradigms: fundamentals/approx-paradigms.md
-  - Architecture Taxonomy:
+  - 🌉 Bridge to Real World:
+      - Human Eyes & Pixel Noise: bridge/human-eyes-and-pixels.md
+      - Why AI Loves Inexact Math: bridge/ai-and-approximate-math.md
+  - ⚙️ Circuit Taxonomies:
       - Approximate Multipliers: taxonomy/multipliers.md
       - Approximate Adders: taxonomy/adders.md
       - Approximate CORDIC: taxonomy/cordic.md
-  - Catalog & Benchmarks:
-      - Literature Catalog: benchmarks/catalog.md
+  - 🧪 Interactive Labs:
+      - Labs Overview: labs/README.md
+      - Multiplier Explorer: labs/multiplier-explorer.html
+      - Inexact Mastery Quiz: labs/quiz-inexact-mastery.html
+  - 🗺️ Learning Tracks:
+      - Track 1 - Circuit Hacker: tracks/circuit-hacker/ROADMAP.md
+      - Track 2 - AI Accelerator: tracks/ai-accelerator/ROADMAP.md
+  - 📊 Catalog & Benchmarks:
+      - Literature Catalog (582 Papers): benchmarks/catalog.md
       - DSE & Pareto Frontiers: benchmarks/dse-pareto.md
