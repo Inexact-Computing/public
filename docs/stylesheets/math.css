@@ -6,6 +6,9 @@
 
 /* Display equations: more air, scroll on narrow viewports */
 .md-typeset div.arithmatex {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
   margin: 1.25em 0;
   padding: 0.65em 0.85em;
   overflow-x: auto;
@@ -28,6 +31,11 @@
 
 .md-typeset div.arithmatex .katex {
   font-size: 1.12em;
+}
+
+/* Keep KaTeX's display box within the scrolling equation container. */
+.md-typeset div.arithmatex .katex-display {
+  margin: 0;
 }
 
 /* Ensure Table of Contents (Right View) is clearly visible and styled */
