@@ -106,32 +106,75 @@
     word-break: break-all;
     color: var(--text);
   }
+  details.guide {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  details.guide summary { cursor: pointer; font-weight: 600; color: var(--primary); }
+  details.guide table { border-collapse: collapse; font-size: 13px; margin: 6px 0; }
+  details.guide th, details.guide td { border: 1px solid var(--card-border); padding: 3px 6px; text-align: left; }
+  details.guide code { font-size: 13px; }
 </style>
 </head>
 <body>
 
 <h2>🎛️ Interactive Multiplier Explorer</h2>
-<p class="desc">Drag the sliders to test how different hardware approximation techniques (DRUM, RoBA, Truncation) multiply numbers and save silicon energy.</p>
+<p class="desc">Drag the sliders to see how three approximate multiplication rules (column truncation, DRUM, RoBA) change the product of two unsigned 8-bit integers. This page computes numbers only; it does not model area, delay, power or energy.</p>
+
+<details class="guide">
+  <summary>Guided tasks: what each control does (static text)</summary>
+  <p><strong>Before you start:</strong> binary place values, and the four steps of multiplication (generate, arrange by weight, compress, add) from the “Start here” part of the Approximate Multipliers page. Small example: 3 × 5 is <code>0011</code> × <code>0101</code>; the 1-bits of B give the rows <code>0011</code> (3) and <code>1100</code> (12), and 3 + 12 = 15.</p>
+  <p><strong>Controls and readings</strong></p>
+  <ul>
+    <li><strong>Operand A</strong> and <strong>Operand B</strong>: whole numbers from 1 to 255; the label shows the value and its 8-bit binary form. Drag a slider, or click it and use the arrow keys (one step per press).</li>
+    <li><strong>Approximation Architecture</strong>: the exact reference, column truncation (partial-product bits with i + j &lt; 4 are never generated), unsigned RoBA (operands rounded to powers of two) or DRUM-4 (a 4-bit window with its lowest bit forced to 1). The grey box under the menu explains the chosen rule for the current operands.</li>
+    <li><strong>Exact Answer (A × B)</strong> and <strong>Approximate Output</strong>: the decimal value, with its 16-bit binary pattern below.</li>
+    <li><strong>Relative Error Distance (RED)</strong>: |approximate − exact| ÷ exact, for this one operand pair.</li>
+    <li><strong>Hardware Cost</strong>: always “Not modelled”; this lab computes numbers only.</li>
+    <li><strong>Exhaustive statistics</strong> (bottom box): all 65,025 operand pairs for the chosen rule. It does not change when you move the sliders.</li>
+  </ul>
+  <p><strong>Task 1.</strong> Predict the four outputs for 3 × 5. Then set A = 3 and B = 5 and choose each option in the menu. Why does column truncation give 0?</p>
+  <p><strong>Task 2.</strong> With RoBA still on 3 × 5, read Ar and Br in the grey box and check the output by hand: Ar·B + Br·A − Ar·Br.</p>
+  <p><strong>Task 3.</strong> Set A = 25, B = 3 and choose DRUM-4. Read the A segment and its shift in the grey box. What number does the segment stand for after the shift?</p>
+  <details>
+    <summary>Expected readings</summary>
+    <table>
+      <tr><th>Operands</th><th>Menu choice</th><th>Approximate Output</th><th>RED</th><th>Grey box</th></tr>
+      <tr><td>3 × 5</td><td>Exact</td><td>15</td><td>0.00%</td><td>Reference: exact product</td></tr>
+      <tr><td>3 × 5</td><td>Column-truncated</td><td>0</td><td>100.00%</td><td>bits with i + j &lt; 4 dropped</td></tr>
+      <tr><td>3 × 5</td><td>Unsigned RoBA</td><td>14</td><td>6.67%</td><td>Ar = 2, Br = 4</td></tr>
+      <tr><td>3 × 5</td><td>DRUM-4</td><td>15</td><td>0.00%</td><td>A segment = 11 (shift 0), B segment = 101 (shift 0)</td></tr>
+      <tr><td>25 × 3</td><td>DRUM-4</td><td>78</td><td>4.00%</td><td>A segment = 1101 (shift 1), B segment = 11 (shift 0)</td></tr>
+    </table>
+    <p>Task 1: every 1-bit of 3 × 5 lies in the four lowest columns, which column truncation never generates. Task 2: 2 × 5 + 4 × 3 − 2 × 4 = 14. Task 3: <code>1101</code> = 13, shifted by 1 place = 26; 26 × 3 = 78, while the exact product is 75.</p>
+  </details>
+</details>
 
 <div class="control-group">
-  <label>Operand A: <span id="valA" style="color: var(--primary); font-weight: bold;">125</span></label>
+  <label>Operand A (unsigned 8-bit, 1–255): <span id="valA" style="color: var(--primary); font-weight: bold;">125</span></label>
   <input type="range" id="sliderA" min="1" max="255" value="125">
 
-  <label>Operand B: <span id="valB" style="color: var(--primary); font-weight: bold;">89</span></label>
+  <label>Operand B (unsigned 8-bit, 1–255): <span id="valB" style="color: var(--primary); font-weight: bold;">89</span></label>
   <input type="range" id="sliderB" min="1" max="255" value="89">
 
   <label>Approximation Architecture:</label>
   <select id="archSelect">
-    <option value="exact">Exact 8-Bit Multiplier (100% Precision, Baseline Energy)</option>
-    <option value="trunc4">Truncated Multiplier (Drop Lower 4 Columns, ~45% Energy Saved)</option>
-    <option value="roba" selected>RoBA Multiplier (Power-of-2 Rounding, ~75% Energy Saved)</option>
-    <option value="drum4">DRUM-4 Multiplier (Dynamic 4-Bit Window, ~58% Energy Saved)</option>
+    <option value="exact">Exact 8×8 unsigned multiplier (reference)</option>
+    <option value="trunc4">Column-truncated multiplier (partial-product columns 0–3 removed, no correction)</option>
+    <option value="roba" selected>Unsigned RoBA (round operands to nearest power of two)</option>
+    <option value="drum4">DRUM-4 (4-bit dynamic segment, LSB forced to 1)</option>
   </select>
+  <div class="binary-box" id="archDetail" style="font-size: 13px; letter-spacing: 0;"></div>
 </div>
 
 <div class="grid">
   <div class="stat-card">
-    <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Exact Answer ($A \times B$)</div>
+    <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Exact Answer (A × B)</div>
     <div class="stat-value" id="resExact">11,125</div>
     <div class="binary-box" id="binExact">0010101101110101</div>
   </div>
@@ -146,13 +189,20 @@
 <div class="grid" style="margin-top: 12px;">
   <div class="stat-card">
     <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Relative Error Distance (RED)</div>
-    <div class="stat-value highlight-error" id="resError">1.05%</div>
+    <div class="stat-value highlight-error" id="resError">0.00%</div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">|approx − exact| / exact for this operand pair</div>
   </div>
 
   <div class="stat-card">
-    <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Estimated Hardware Energy Saved</div>
-    <div class="stat-value highlight-savings" id="resEnergy">~75%</div>
+    <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Hardware Cost</div>
+    <div class="stat-value highlight-savings" id="resEnergy" style="font-size: 18px;">Not modelled</div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Area, power and energy depend on the circuit, technology and operating point; none are computed here.</div>
   </div>
+</div>
+
+<div class="control-group" style="margin-top: 12px; margin-bottom: 0;">
+  <label>Exhaustive statistics for the selected architecture (all 255 × 255 = 65,025 pairs with A, B in 1–255, computed in this page):</label>
+  <div class="binary-box" id="resStats" style="font-size: 13px; letter-spacing: 0;"></div>
 </div>
 
 <script>
@@ -160,31 +210,100 @@ const sliderA = document.getElementById('sliderA');
 const sliderB = document.getElementById('sliderB');
 const archSelect = document.getElementById('archSelect');
 
-function nearestPowerOf2(n) {
-  if (n <= 0) return 1;
-  const p = Math.round(Math.log2(n));
-  return Math.pow(2, p);
+const OPERAND_MAX = 255;
+
+function checkOperand(n) {
+  if (!Number.isInteger(n) || n < 0 || n > OPERAND_MAX) {
+    throw new RangeError('operand must be an unsigned integer in 0..' + OPERAND_MAX + ', got ' + n);
+  }
+  return n;
 }
 
 function lod(n) {
+  let k = -1;
+  while (n > 0) { n >>= 1; k++; }
+  return k;
+}
+
+// RoBA rounding: nearest power of two by linear distance; a tie at 3*2^(p-1) goes to
+// the larger power, except 3, which rounds to 2. Zero rounds to 0.
+function robaRound(n) {
+  checkOperand(n);
   if (n === 0) return 0;
-  return Math.floor(Math.log2(n));
+  const lo = 1 << lod(n);
+  const hi = lo << 1;
+  if (n - lo < hi - n) return lo;
+  if (n - lo > hi - n) return hi;
+  return n === 3 ? 2 : hi;
+}
+
+function robaMultiply(a, b) {
+  const ar = robaRound(a), br = robaRound(b);
+  return ar * b + br * a - ar * br;
+}
+
+function drumSegment(n, k) {
+  const t = lod(n);
+  if (t <= k - 1) return { m: n, s: 0 };
+  const s = t - k + 1;
+  return { m: (n >> s) | 1, s };
 }
 
 function drumMultiply(a, b, k = 4) {
-  if (a === 0 || b === 0) return 0;
-  const l1 = lod(a);
-  const l2 = lod(b);
-  
-  const s1 = Math.max(0, l1 - k + 1);
-  const s2 = Math.max(0, l2 - k + 1);
-  
-  const m1 = (a >> s1) & ((1 << k) - 1);
-  const m2 = (b >> s2) & ((1 << k) - 1);
-  
-  const mult = m1 * m2;
-  return mult << (s1 + s2);
+  checkOperand(a); checkOperand(b);
+  const x = drumSegment(a, k), y = drumSegment(b, k);
+  return (x.m * y.m) * Math.pow(2, x.s + y.s);
 }
+
+function truncColumnsMultiply(a, b, cols = 4) {
+  checkOperand(a); checkOperand(b);
+  let sum = 0;
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      if (i + j >= cols && ((a >> i) & 1) && ((b >> j) & 1)) sum += Math.pow(2, i + j);
+    }
+  }
+  return sum;
+}
+
+function approxMultiply(arch, a, b) {
+  checkOperand(a); checkOperand(b);
+  if (arch === 'exact') return a * b;
+  if (arch === 'trunc4') return truncColumnsMultiply(a, b, 4);
+  if (arch === 'roba') return robaMultiply(a, b);
+  if (arch === 'drum4') return drumMultiply(a, b, 4);
+  throw new Error('unknown architecture ' + arch);
+}
+
+function exhaustiveStats(arch) {
+  let n = 0, wrong = 0, sumRed = 0, maxRed = 0, sumSigned = 0, maxA = 0, maxB = 0;
+  for (let a = 1; a <= OPERAND_MAX; a++) {
+    for (let b = 1; b <= OPERAND_MAX; b++) {
+      const exact = a * b;
+      const d = approxMultiply(arch, a, b) - exact;
+      const red = Math.abs(d) / exact;
+      n++;
+      if (d !== 0) wrong++;
+      sumRed += red;
+      sumSigned += d / exact;
+      if (red > maxRed) { maxRed = red; maxA = a; maxB = b; }
+    }
+  }
+  return { n, wrong, errorRate: wrong / n, mred: sumRed / n, maxRed, maxA, maxB, meanSignedRed: sumSigned / n };
+}
+
+function archDetail(arch, a, b) {
+  if (arch === 'exact') return 'Reference: exact product A × B.';
+  if (arch === 'trunc4') return 'Every partial-product bit a_i·b_j with i + j < 4 is dropped; no compensation constant is added, so the result never exceeds the exact product.';
+  if (arch === 'roba') {
+    return 'Ar = ' + robaRound(a) + ', Br = ' + robaRound(b) + '; A×B ≈ Ar·B + Br·A − Ar·Br (unsigned operands only; signed RoBA variants are not modelled).';
+  }
+  const x = drumSegment(a, 4), y = drumSegment(b, 4);
+  return 'A segment = ' + x.m.toString(2) + ' (shift ' + x.s + '), B segment = ' + y.m.toString(2) + ' (shift ' + y.s + '); result = segA × segB × 2^' + (x.s + y.s) + '.';
+}
+
+const statsCache = {};
+function pct(x, digits) { return (x * 100).toFixed(digits) + '%'; }
 
 function compute() {
   const a = parseInt(sliderA.value);
@@ -195,26 +314,7 @@ function compute() {
   document.getElementById('valB').innerText = b + " (0b" + b.toString(2).padStart(8, '0') + ")";
 
   const exact = a * b;
-  let approx = exact;
-  let energySaved = "0%";
-
-  if (arch === 'exact') {
-    approx = exact;
-    energySaved = "0% (Baseline)";
-  } else if (arch === 'trunc4') {
-    approx = exact & (~0x0F);
-    energySaved = "~45%";
-  } else if (arch === 'roba') {
-    const ar = nearestPowerOf2(a);
-    const br = nearestPowerOf2(b);
-    approx = (ar * b) + (br * a) - (ar * br);
-    if (approx < 0) approx = 0;
-    energySaved = "~75%";
-  } else if (arch === 'drum4') {
-    approx = drumMultiply(a, b, 4);
-    energySaved = "~58%";
-  }
-
+  const approx = approxMultiply(arch, a, b);
   const err = exact === 0 ? 0 : Math.abs(approx - exact) / exact * 100;
 
   document.getElementById('resExact').innerText = exact.toLocaleString();
@@ -224,7 +324,14 @@ function compute() {
   document.getElementById('binApprox').innerText = approx.toString(2).padStart(16, '0');
 
   document.getElementById('resError').innerText = err.toFixed(2) + "%";
-  document.getElementById('resEnergy').innerText = energySaved;
+  document.getElementById('archDetail').innerText = archDetail(arch, a, b);
+
+  const s = statsCache[arch] || (statsCache[arch] = exhaustiveStats(arch));
+  document.getElementById('resStats').innerText =
+    'Wrong results: ' + s.wrong.toLocaleString() + ' of ' + s.n.toLocaleString() + ' (' + pct(s.errorRate, 2) + ')' +
+    ' · Mean RED: ' + pct(s.mred, 3) +
+    ' · Max RED: ' + pct(s.maxRed, 2) + (s.maxRed > 0 ? ' (A=' + s.maxA + ', B=' + s.maxB + ')' : '') +
+    ' · Mean signed relative error: ' + (s.meanSignedRed >= 0 ? '+' : '') + pct(s.meanSignedRed, 3);
 }
 
 sliderA.addEventListener('input', compute);

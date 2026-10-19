@@ -56,13 +56,13 @@ markdown_extensions:
       permalink: true
 
 extra_css:
-  - https://unpkg.com/katex@0/dist/katex.min.css
+  - https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/katex.min.css
   - stylesheets/math.css
 
 extra_javascript:
+  - https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/katex.min.js
+  - https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/contrib/auto-render.min.js
   - javascripts/katex.js
-  - https://unpkg.com/katex@0/dist/katex.min.js
-  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
 
 nav:
   - Home: index.md
@@ -81,7 +81,7 @@ nav:
       - Approximate Multipliers: taxonomy/multipliers.md
       - Approximate Adders: taxonomy/adders.md
       - Approximate CORDIC: taxonomy/cordic.md
-      - Dividers & Square Rooters: taxonomy/dividers.md
+      - Dividers & Squarers: taxonomy/dividers.md
       - Transforms (DCT & FFT): taxonomy/transforms.md
       - Memory & Storage: taxonomy/memory.md
       - AI Accelerators & Systolic Arrays: taxonomy/accelerators.md

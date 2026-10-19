@@ -1,0 +1,19 @@
+network,point,is_qint8_baseline,top1_accuracy_pct,relative_accuracy_pct,relative_conv_multiplication_energy_pct,total_energy_as_printed,source,dataset,normalization
+ResNet-50,0,yes,89.15,100.00,100.00,120.27 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-50
+ResNet-50,1,no,89.30,100.17,83.29,100.17 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-50
+ResNet-50,2,no,89.08,99.92,78.47,94.37 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-50
+ResNet-50,3,no,88.69,99.48,77.97,93.77 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-50
+ResNet-50,4,no,88.58,99.36,70.02,84.21 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-50
+ResNet-50,5,no,88.10,98.82,69.12,83.13 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-50
+ResNet-50,6,no,87.77,98.45,67.36,81.02 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-50
+ResNet-50,7,no,85.00,95.34,57.74,69.45 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-50
+ResNet-14,0,yes,85.55,100.00,100.00,35.33 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-14
+ResNet-14,1,no,85.87,100.37,80.32,28.38 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-14
+ResNet-14,2,no,85.42,99.85,74.34,26.27 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-14
+ResNet-14,3,no,84.77,99.09,70.85,25.04 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-14
+ResNet-14,4,no,83.82,97.98,64.64,22.84 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-14
+ResNet-8,0,yes,83.26,100.00,100.00,21.18 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-8
+ResNet-8,1,no,83.16,99.88,84.31,17.86 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-8
+ResNet-8,2,no,81.79,98.23,70.23,14.87 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-8
+ResNet-8,3,no,79.11,95.02,59.95,12.70 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-8
+ResNet-8,4,no,75.71,90.93,56.04,11.87 M,ALWANN ICCAD 2019 Table III,CIFAR-10,relative to qint8 ResNet-8

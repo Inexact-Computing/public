@@ -153,59 +153,183 @@
 <body>
 <div class="wrap">
   <h1>⚡ Adder Carry Propagation Race Lab</h1>
-  <p class="lede">Watch how the <strong>carry chain ripple delay</strong> limits exact addition, and how approximate adders (ACA, LOA) cut the chain to achieve 3× faster clock frequencies!</p>
+  <p class="lede">Enter two unsigned 16-bit operands and compare the sum computed by exact addition with two approximate adders that limit how far a carry can travel: ACA-4 (each carry predicted from the 4 bits below it) and LOA-8 (lower 8 bits approximated with OR gates). All sums and errors below are computed in this page; the bar animation is a schematic, not a timing simulation.</p>
 
   <div class="grid" id="archBtns">
-    <button class="cellBtn active" onclick="setArch('rca')">1. Exact Ripple Carry (RCA)</button>
-    <button class="cellBtn" onclick="setArch('cla')">2. Exact Carry Lookahead (CLA)</button>
-    <button class="cellBtn" onclick="setArch('aca')">3. Speculative Adder (ACA)</button>
-    <button class="cellBtn" onclick="setArch('loa')">4. Lower-Part Approx (LOA)</button>
+    <button class="cellBtn active" data-arch="rca" onclick="setArch('rca')">1. Exact Ripple Carry (RCA)</button>
+    <button class="cellBtn" data-arch="cla" onclick="setArch('cla')">2. Exact Carry Lookahead (CLA)</button>
+    <button class="cellBtn" data-arch="aca" onclick="setArch('aca')">3. Almost Correct Adder (ACA-4)</button>
+    <button class="cellBtn" data-arch="loa" onclick="setArch('loa')">4. Lower-Part OR Adder (LOA-8)</button>
   </div>
 
   <div class="controls">
-    <button class="primary" onclick="startRace()">🚀 Fire Carry Propagation Race</button>
-    <span style="font-size: 0.85rem; color: var(--text-muted);">Bit-width: <strong>16 bits</strong></span>
-    <span style="font-size: 0.85rem; color: var(--text-muted);">Pattern: <code>0xFFFF + 0x0001</code></span>
+    <label style="font-size: 0.85rem; color: var(--text-muted);">A (hex) <input id="inA" value="FFFF" size="6" maxlength="4" style="font-family: monospace; background: var(--card-bg); color: var(--text); border: 1px solid var(--card-border); border-radius: 4px; padding: 2px 4px;"></label>
+    <label style="font-size: 0.85rem; color: var(--text-muted);">B (hex) <input id="inB" value="0001" size="6" maxlength="4" style="font-family: monospace; background: var(--card-bg); color: var(--text); border: 1px solid var(--card-border); border-radius: 4px; padding: 2px 4px;"></label>
+    <button class="primary" onclick="startRace()">▶ Replay schematic</button>
+    <span style="font-size: 0.85rem; color: var(--text-muted);">Width: <strong>16 bits</strong>, unsigned; sums keep the carry-out (17 bits)</span>
+    <span id="inputMsg" style="font-size: 0.85rem; color: var(--accent);"></span>
   </div>
 
   <canvas id="raceCanvas" width="850" height="200"></canvas>
+  <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 0;">Schematic only: the sweep speed of each architecture is illustrative and is not derived from a circuit model. Each cell shows the computed sum bit; orange cells differ from the exact sum.</p>
 
   <div class="stats">
     <div class="stat"><div class="stat-label">Architecture</div><div class="stat-value" id="sArch">RCA</div></div>
-    <div class="stat"><div class="stat-label">Propagation Delay</div><div class="stat-value" id="sDelay">16 gate delays</div></div>
-    <div class="stat"><div class="stat-label">Critical Path</div><div class="stat-value" id="sPath">Full 16 bits</div></div>
-    <div class="stat"><div class="stat-label">Error Rate</div><div class="stat-value" id="sError" style="color: var(--primary);">0.00% (Exact)</div></div>
+    <div class="stat"><div class="stat-label">Exact A + B</div><div class="stat-value" id="sExact">0x10000</div></div>
+    <div class="stat"><div class="stat-label">Adder Output</div><div class="stat-value" id="sApprox">0x10000</div></div>
+    <div class="stat"><div class="stat-label">Error (output − exact)</div><div class="stat-value" id="sError" style="color: var(--primary);">0</div></div>
+    <div class="stat"><div class="stat-label">Longest exact carry ripple (this pair)</div><div class="stat-value" id="sRipple">15</div></div>
   </div>
+  <p style="font-size: 12px; color: var(--text-muted); margin: 8px 0 0;" id="sPath"></p>
+  <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0;" id="sStats"></p>
 </div>
 
 <script>
 const canvas = document.getElementById('raceCanvas');
 const ctx = canvas.getContext('2d');
+const WIDTH = 16;
+const ACA_K = 4;
+const LOA_K = 8;
+const STATS_SEED = 20261014;
+const STATS_SAMPLES = 100000;
+
 let currentArch = 'rca';
 let animFrame = null;
 let raceProgress = 0;
+let current = { a: 0xFFFF, b: 0x0001, exact: 0x10000, approx: 0x10000 };
 
 const archs = {
-  rca: { name: 'RCA', delay: 16, maxBit: 16, path: 'Full 16 bits', err: '0.00% (Exact)', errCol: 'var(--primary)', speed: 1 },
-  cla: { name: 'CLA', delay: 4, maxBit: 16, path: '4-bit lookahead tree', err: '0.00% (Exact)', errCol: 'var(--primary)', speed: 4 },
-  aca: { name: 'ACA-4', delay: 4, maxBit: 4, path: '4-bit speculative window', err: '~0.4% Error', errCol: 'var(--accent)', speed: 4 },
-  loa: { name: 'LOA-8', delay: 8, maxBit: 8, path: 'Upper 8 bits only', err: '~1.2% Error', errCol: 'var(--accent)', speed: 2 }
+  rca: { name: 'RCA', speed: 1, path: 'Exact. A carry may ripple through every one of the 16 bit positions.' },
+  cla: { name: 'CLA', speed: 4, path: 'Exact: same sum as RCA, with carries computed by a lookahead network of logarithmic depth. The lookahead structure and its delay are not simulated here.' },
+  aca: { name: 'ACA-4', speed: 4, path: 'Almost Correct Adder (Verma, Brisk & Ienne, DATE 2008): the carry into bit i is computed only from bits i−4 … i−1, assuming no carry enters bit i−4. The output is wrong exactly when a real carry must travel more than 4 positions.' },
+  loa: { name: 'LOA-8', speed: 2, path: 'Lower-part OR adder (Mahdiani et al., IEEE TCAS-I 2010): sum bits 0–7 are a_j OR b_j, the carry into bit 8 is a_7 AND b_7, and bits 8–15 use an exact 8-bit adder.' }
 };
+
+function mask(w) { return w >= 31 ? 0x7FFFFFFF : (1 << w) - 1; }
+
+function checkOperand(x, n) {
+  if (!Number.isInteger(x) || x < 0 || x > mask(n)) throw new RangeError('operand must be an unsigned ' + n + '-bit integer');
+  return x;
+}
+
+function exactAdd(a, b, n) {
+  checkOperand(a, n); checkOperand(b, n);
+  return a + b;
+}
+
+// Carry into bit i predicted from bits max(0, i-k) .. i-1 with carry-in 0; i = n gives the carry-out.
+function acaAdd(a, b, n, k) {
+  checkOperand(a, n); checkOperand(b, n);
+  let out = 0;
+  for (let i = 0; i <= n; i++) {
+    const lo = Math.max(0, i - k);
+    const w = i - lo;
+    const c = (((a >> lo) & mask(w)) + ((b >> lo) & mask(w))) >> w;
+    if (i < n) out += (((a >> i) ^ (b >> i) ^ c) & 1) * Math.pow(2, i);
+    else out += c * Math.pow(2, n);
+  }
+  return out;
+}
+
+function loaAdd(a, b, n, k) {
+  checkOperand(a, n); checkOperand(b, n);
+  const lower = (a | b) & mask(k);
+  const cin = k > 0 ? ((a >> (k - 1)) & (b >> (k - 1)) & 1) : 0;
+  const upper = (a >> k) + (b >> k) + cin;
+  return upper * Math.pow(2, k) + lower;
+}
+
+function adderOutput(arch, a, b) {
+  if (arch === 'rca' || arch === 'cla') return exactAdd(a, b, WIDTH);
+  if (arch === 'aca') return acaAdd(a, b, WIDTH, ACA_K);
+  if (arch === 'loa') return loaAdd(a, b, WIDTH, LOA_K);
+  throw new Error('unknown architecture ' + arch);
+}
+
+// Longest number of positions an exact carry travels: a generate at bit j followed by propagates.
+function longestCarryRipple(a, b, n) {
+  let best = 0;
+  for (let j = 0; j < n; j++) {
+    if (!((a >> j) & (b >> j) & 1)) continue;
+    let len = 1;
+    while (j + len < n && (((a ^ b) >> (j + len)) & 1)) len++;
+    best = Math.max(best, len);
+  }
+  return best;
+}
+
+function mulberry32(seed) {
+  return function () {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = seed;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function randomStats(arch, samples = STATS_SAMPLES, seed = STATS_SEED) {
+  const rnd = mulberry32(seed);
+  let wrong = 0, sumAbs = 0, maxAbs = 0, sumRed = 0, redCount = 0;
+  for (let s = 0; s < samples; s++) {
+    const a = Math.floor(rnd() * 65536), b = Math.floor(rnd() * 65536);
+    const exact = a + b;
+    const d = adderOutput(arch, a, b) - exact;
+    if (d !== 0) wrong++;
+    sumAbs += Math.abs(d);
+    maxAbs = Math.max(maxAbs, Math.abs(d));
+    if (exact > 0) { sumRed += Math.abs(d) / exact; redCount++; }
+  }
+  return { samples, wrong, errorRate: wrong / samples, med: sumAbs / samples, maxAbs, mred: redCount ? sumRed / redCount : 0 };
+}
+
+const statsCache = {};
+
+function hex(x) { return '0x' + x.toString(16).toUpperCase(); }
+
+function readOperand(id) {
+  const s = document.getElementById(id).value.trim().replace(/^0x/i, '');
+  if (!/^[0-9a-fA-F]{1,4}$/.test(s)) return null;
+  return parseInt(s, 16);
+}
+
+function compute() {
+  const a = readOperand('inA'), b = readOperand('inB');
+  const msg = document.getElementById('inputMsg');
+  if (a === null || b === null) {
+    msg.innerText = 'Enter 1–4 hex digits (0000–FFFF) for both operands.';
+    ['sExact', 'sApprox', 'sError', 'sRipple'].forEach(id => { document.getElementById(id).innerText = '—'; });
+    return false;
+  }
+  msg.innerText = '';
+  const exact = exactAdd(a, b, WIDTH);
+  const approx = adderOutput(currentArch, a, b);
+  current = { a, b, exact, approx };
+
+  const d = archs[currentArch];
+  document.getElementById('sArch').innerText = d.name;
+  document.getElementById('sExact').innerText = hex(exact);
+  document.getElementById('sApprox').innerText = hex(approx);
+  const diff = approx - exact;
+  const sErr = document.getElementById('sError');
+  sErr.innerText = (diff > 0 ? '+' : '') + diff;
+  sErr.style.color = diff === 0 ? 'var(--primary)' : 'var(--accent)';
+  const ripple = longestCarryRipple(a, b, WIDTH);
+  document.getElementById('sRipple').innerText = ripple + (ripple === 1 ? ' bit' : ' bits');
+  document.getElementById('sPath').innerText = d.path;
+
+  const st = statsCache[currentArch] || (statsCache[currentArch] = randomStats(currentArch));
+  document.getElementById('sStats').innerText =
+    'Random test of this architecture (' + st.samples.toLocaleString() + ' uniformly random 16-bit pairs, fixed seed ' + STATS_SEED + '): ' +
+    'wrong sums ' + st.wrong.toLocaleString() + ' (' + (100 * st.errorRate).toFixed(2) + '%), ' +
+    'mean |error| ' + st.med.toFixed(2) + ', max |error| ' + st.maxAbs + ', mean relative error ' + (100 * st.mred).toFixed(4) + '%.';
+  return true;
+}
 
 function setArch(a) {
   currentArch = a;
-  document.querySelectorAll('.cellBtn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  
-  const d = archs[a];
-  document.getElementById('sArch').innerText = d.name;
-  document.getElementById('sDelay').innerText = d.delay + ' gate delays';
-  document.getElementById('sPath').innerText = d.path;
-  const sErr = document.getElementById('sError');
-  sErr.innerText = d.err;
-  sErr.style.color = d.errCol;
-  
-  startRace();
+  document.querySelectorAll('.cellBtn').forEach(btn => btn.classList.toggle('active', btn.dataset.arch === a));
+  if (compute()) startRace();
 }
 
 function startRace() {
@@ -234,7 +358,9 @@ function draw() {
     const bitIdx = 15 - i;
     const x = startX + i * bitW;
     const isCompleted = raceProgress >= (16 - i);
-    const isApprox = (currentArch === 'loa' && bitIdx < 8) || (currentArch === 'aca' && bitIdx % 4 === 0);
+    const outBit = Math.floor(current.approx / Math.pow(2, bitIdx)) % 2;
+    const exactBit = Math.floor(current.exact / Math.pow(2, bitIdx)) % 2;
+    const isApprox = outBit !== exactBit;
 
     ctx.fillStyle = isCompleted ? '#00897b' : '#1e293b';
     if (isApprox && isCompleted) ctx.fillStyle = '#ff7043';
@@ -251,7 +377,7 @@ function draw() {
 
     ctx.font = '10px Roboto, sans-serif';
     ctx.fillStyle = isCompleted ? '#e0f2f1' : '#64748b';
-    ctx.fillText(isCompleted ? '✓ Done' : 'Wait', x + bitW / 2, startY + 48);
+    ctx.fillText(isCompleted ? 'S=' + outBit : '…', x + bitW / 2, startY + 48);
 
     if (i < totalBits - 1) {
       const nextX = startX + (i + 1) * bitW;
@@ -269,9 +395,12 @@ function draw() {
   ctx.textAlign = 'left';
   ctx.fillText('Bit 15 (MSB)', startX, startY + h + 24);
   ctx.textAlign = 'right';
-  ctx.fillText('Bit 0 (LSB - Carry In)', startX + totalBits * bitW, startY + h + 24);
+  ctx.fillText('Bit 0 (LSB)', startX + totalBits * bitW, startY + h + 24);
 }
 
+document.getElementById('inA').addEventListener('input', () => { if (compute()) draw(); });
+document.getElementById('inB').addEventListener('input', () => { if (compute()) draw(); });
+compute();
 draw();
 </script>
 </body>

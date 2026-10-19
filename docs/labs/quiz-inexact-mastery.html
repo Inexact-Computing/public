@@ -143,99 +143,140 @@
 </head>
 <body>
 
+<div class="quiz-card">
+  <div class="q-title">&#128216; How to use this quiz (read this first)</div>
+  <p style="font-size: 0.9rem; margin: 0 0 8px;">This is an <strong>optional advanced self-check</strong>. Its four questions cover three earlier topics: bit weights (<a href="../start/bits-and-carry/">Bits and carries</a>), the error metrics ED / MED / ER (<a href="../fundamentals/error-metrics-made-easy/">Error metrics made easy</a>), and what a ripple-carry adder's delay depends on (<a href="../taxonomy/adders/">Approximate adders</a>).</p>
+  <ul style="font-size: 0.9rem; margin: 0 0 8px 18px; padding: 0;">
+    <li>It is fine to score 4/4 here without having read any new page on this site: it tests those <em>prerequisites</em>, not the newer material.</li>
+    <li>It does <strong>not</strong> replace the "Check your understanding" questions inside the pages themselves (the WB-numbered questions). Those check the page they sit on; this quiz checks the ground underneath them.</li>
+    <li>Each question locks once you answer. It marks the right option, marks yours if it differs, and explains the reasoning. The <strong>&#128260; Retake Quiz</strong> button clears every answer and starts again.</li>
+    <li>Nothing is scored, saved or sent anywhere &mdash; the counter is local to this page and resets when you reload it.</li>
+  </ul>
+  <p style="font-size: 0.9rem; margin: 0;">To get real value out of it, work on paper first: pick an option, then write one sentence saying why each of the other three is wrong.</p>
+</div>
+
 <div class="quiz-card" id="q1">
-  <div class="q-title">1. Which application is LEAST suitable for approximate computing?</div>
-  <button class="option-btn" onclick="check(1, 0, false)">A. Real-time video game physics & rendering</button>
-  <button class="option-btn" onclick="check(1, 1, true)">B. Bank account balance calculations</button>
-  <button class="option-btn" onclick="check(1, 2, false)">C. Convolutional Neural Network (CNN) image classification</button>
-  <button class="option-btn" onclick="check(1, 3, false)">D. Audio noise reduction and speech recognition</button>
+  <div class="q-title">1. An exact 4-bit adder gives 7 + 1 = 8, but an approximate adder returns 7. The sum is only used to decide "is it at least 8?". What happens to that decision?</div>
+  <button class="option-btn" data-q="1" data-opt="0">A. Nothing changes, because the error is only 1.</button>
+  <button class="option-btn" data-q="1" data-opt="1">B. Nothing changes, because the approximate adder is right for most other inputs.</button>
+  <button class="option-btn" data-q="1" data-opt="2">C. The decision changes: the exact sum says yes (8 &ge; 8), the approximate sum says no (7 &lt; 8).</button>
+  <button class="option-btn" data-q="1" data-opt="3">D. It cannot be judged without first measuring the PSNR.</button>
   <div class="feedback" id="f1"></div>
 </div>
 
 <div class="quiz-card" id="q2">
-  <div class="q-title">2. Why can neural networks and human eyes tolerate approximate arithmetic?</div>
-  <button class="option-btn" onclick="check(2, 0, false)">A. Because pixels are always binary 0 or 1</button>
-  <button class="option-btn" onclick="check(2, 1, false)">B. Because digital multipliers are completely free</button>
-  <button class="option-btn" onclick="check(2, 2, true)">C. Because perception and deep learning weights have inherent error tolerance</button>
-  <button class="option-btn" onclick="check(2, 3, false)">D. Because exact math creates compiler errors</button>
+  <div class="q-title">2. In an unsigned binary number, bit 2 (counting from bit 0 on the right) changes from 0 to 1. Nothing else changes. How does the value change?</div>
+  <button class="option-btn" data-q="2" data-opt="0">A. It increases by 2.</button>
+  <button class="option-btn" data-q="2" data-opt="1">B. It increases by 4.</button>
+  <button class="option-btn" data-q="2" data-opt="2">C. It doubles.</button>
+  <button class="option-btn" data-q="2" data-opt="3">D. It increases by 8.</button>
   <div class="feedback" id="f2"></div>
 </div>
 
 <div class="quiz-card" id="q3">
-  <div class="q-title">3. What causes the main speed bottleneck (critical path delay) in an exact binary adder?</div>
-  <button class="option-btn" onclick="check(3, 0, true)">A. Carry bit propagation having to ripple all the way from Bit 0 to Bit 15</button>
-  <button class="option-btn" onclick="check(3, 1, false)">B. The clock frequency being too high</button>
-  <button class="option-btn" onclick="check(3, 2, false)">C. Too many AND gates generating partial products</button>
-  <button class="option-btn" onclick="check(3, 3, false)">D. DRAM refresh cycles</button>
+  <div class="q-title">3. In an exact ripple-carry adder, what usually sets the longest delay (the critical path)?</div>
+  <button class="option-btn" data-q="3" data-opt="0">A. A carry may have to pass through every bit position, one stage after another.</button>
+  <button class="option-btn" data-q="3" data-opt="1">B. Higher sum bits need more gates, even when no carry is involved.</button>
+  <button class="option-btn" data-q="3" data-opt="2">C. Generating partial products with AND gates.</button>
+  <button class="option-btn" data-q="3" data-opt="3">D. Loading the two operands from memory.</button>
   <div class="feedback" id="f3"></div>
 </div>
 
 <div class="quiz-card" id="q4">
-  <div class="q-title">4. How does the Rounding-Based Multiplier (RoBA) achieve over 70% energy savings?</div>
-  <button class="option-btn" onclick="check(4, 0, false)">A. By turning off the chip power supply</button>
-  <button class="option-btn" onclick="check(4, 1, true)">B. By rounding inputs to powers of two ($2^k$), converting multiplication into simple wire shifts</button>
-  <button class="option-btn" onclick="check(4, 2, false)">C. By calculating 64-bit Taylor expansions</button>
-  <button class="option-btn" onclick="check(4, 3, false)">D. By running the clock backwards</button>
+  <div class="q-title">4. Assume the result has enough bits. Multiplying 3 (binary 0011) by 2<sup>3</sup> can be done by shifting it left 3 places. What is the result?</div>
+  <button class="option-btn" data-q="4" data-opt="0">A. 6</button>
+  <button class="option-btn" data-q="4" data-opt="1">B. 11</button>
+  <button class="option-btn" data-q="4" data-opt="2">C. 12</button>
+  <button class="option-btn" data-q="4" data-opt="3">D. 24</button>
   <div class="feedback" id="f4"></div>
 </div>
 
 <div class="score-box">
   <div>Completed: <span id="answered">0</span>/4 | Score: <span id="pts">0</span>/4</div>
-  <button class="reset-btn" onclick="resetQuiz()">🔄 Retake Quiz</button>
+  <button class="reset-btn" id="resetBtn">🔄 Retake Quiz</button>
 </div>
 
 <script>
-let totalAnswered = 0;
-let points = 0;
+// Index of the right option for questions 1-4. This table is the only source of truth for scoring.
+const ANSWERS = [2, 1, 0, 3];
+const LETTERS = ['A', 'B', 'C', 'D'];
 const explanations = {
-  1: "Correct! Banking, cryptography, and medical dosing require strict 100% precision. Audio, vision, and AI are error-resilient.",
-  2: "Correct! Human perceptual limits and neural network statistical distributions naturally filter out minor mathematical noise.",
-  3: "Correct! The serial carry ripple chain forms the longest delay path. Approximate adders cut this chain for 3x speed.",
-  4: "Correct! Multiplying by 2^k is a hardware wire shift with zero multiplier logic gates!"
+  1: "The error is only 1, but it lands exactly on the threshold: 8 passes the test and 7 does not. Whether an error is acceptable depends on the task, not only on how small the error is.",
+  2: "Bit k has weight 2^k. Bit 2 has weight 2^2 = 4, so setting it from 0 to 1 adds exactly 4, whatever the other bits are.",
+  3: "In a ripple-carry adder each bit must wait for the carry from the bit below it. In the worst case (for example 1111 + 0001) the carry travels through every stage, so delay grows with the number of bits.",
+  4: "Shifting left by one place multiplies by 2, so three places multiply by 2^3 = 8: 0011 becomes 11000, which is 3 x 8 = 24."
 };
 
-function check(qNum, optIdx, isCorrect) {
-  const card = document.getElementById('q' + qNum);
-  const btns = card.querySelectorAll('.option-btn');
-  const fb = document.getElementById('f' + qNum);
-  
-  btns.forEach((btn, idx) => {
-    btn.disabled = true;
-    if (idx === optIdx) {
-      btn.classList.add(isCorrect ? 'correct' : 'wrong');
-    }
-  });
-
-  fb.style.display = 'block';
-  if (isCorrect) {
-    fb.innerHTML = '<strong>✅ ' + explanations[qNum] + '</strong>';
-    points++;
-  } else {
-    fb.innerHTML = '<strong>❌ Not quite!</strong> ' + explanations[qNum];
-  }
-
-  totalAnswered++;
-  document.getElementById('answered').innerText = totalAnswered;
-  document.getElementById('pts').innerText = points;
+function createQuizState() {
+  return { answered: [null, null, null, null] };
 }
 
-function resetQuiz() {
-  totalAnswered = 0;
-  points = 0;
-  document.getElementById('answered').innerText = '0';
-  document.getElementById('pts').innerText = '0';
+function answerQuestion(state, qNum, optIdx) {
+  if (state.answered[qNum - 1] !== null) return null;
+  state.answered[qNum - 1] = optIdx;
+  return { isRight: optIdx === ANSWERS[qNum - 1], rightIdx: ANSWERS[qNum - 1] };
+}
 
-  for (let i = 1; i <= 4; i++) {
-    const card = document.getElementById('q' + i);
-    const btns = card.querySelectorAll('.option-btn');
-    const fb = document.getElementById('f' + i);
-    btns.forEach(btn => {
-      btn.disabled = false;
-      btn.classList.remove('correct', 'wrong');
+function quizTotals(state) {
+  let completed = 0;
+  let score = 0;
+  state.answered.forEach((opt, i) => {
+    if (opt === null) return;
+    completed++;
+    if (opt === ANSWERS[i]) score++;
+  });
+  return { completed, score };
+}
+
+if (typeof document !== 'undefined') {
+  let state = createQuizState();
+
+  const updateTotals = () => {
+    const t = quizTotals(state);
+    document.getElementById('answered').textContent = t.completed;
+    document.getElementById('pts').textContent = t.score;
+  };
+
+  const check = (qNum, optIdx) => {
+    const result = answerQuestion(state, qNum, optIdx);
+    if (result === null) return;
+
+    const btns = document.getElementById('q' + qNum).querySelectorAll('.option-btn');
+    btns.forEach((btn, idx) => {
+      btn.disabled = true;
+      if (idx === result.rightIdx) btn.classList.add('correct');
+      else if (idx === optIdx) btn.classList.add('wrong');
     });
-    fb.style.display = 'none';
-    fb.innerHTML = '';
-  }
+
+    const fb = document.getElementById('f' + qNum);
+    const verdict = document.createElement('strong');
+    verdict.textContent = result.isRight
+      ? '✅ Right. '
+      : '❌ Not quite. You chose ' + LETTERS[optIdx] + '; the right answer is ' + LETTERS[result.rightIdx] + '. ';
+    fb.replaceChildren(verdict, document.createTextNode(explanations[qNum]));
+    fb.style.display = 'block';
+
+    updateTotals();
+  };
+
+  const resetQuiz = () => {
+    state = createQuizState();
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById('q' + i).querySelectorAll('.option-btn').forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('correct', 'wrong');
+      });
+      const fb = document.getElementById('f' + i);
+      fb.style.display = 'none';
+      fb.replaceChildren();
+    }
+    updateTotals();
+  };
+
+  document.querySelectorAll('.option-btn').forEach(btn => {
+    btn.addEventListener('click', () => check(Number(btn.dataset.q), Number(btn.dataset.opt)));
+  });
+  document.getElementById('resetBtn').addEventListener('click', resetQuiz);
 }
 </script>
 </body>

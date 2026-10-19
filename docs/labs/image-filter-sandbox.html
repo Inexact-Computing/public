@@ -113,12 +113,39 @@
   }
   .stat-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); }
   .stat-val { font-size: 18px; font-weight: bold; color: var(--primary); font-family: monospace; }
+  .stat-note { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
 </style>
 </head>
 <body>
 
 <h2>🖼️ Interactive Image Filtering Sandbox</h2>
-<p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 14px;">See how 2D image convolution tolerates approximate multiplier arithmetic without visible loss of sharpness or edges.</p>
+<p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 14px;">Compare exact 3×3 cross-correlation (equivalent to convolution for symmetric kernels) with a teaching model that clears the low bits of every product. The displayed kernels are applied without flipping them; Sobel orientation follows that convention. The numbers measure pixel differences only, not whether the result is good enough for a task.</p>
+<section style="margin: 4px 0 14px; padding: 12px 14px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--card-bg);">
+  <h3 style="margin: 0 0 8px; font-size: 15px; color: var(--primary);">&#128216; Guided lab: how to use this sandbox</h3>
+
+  <p style="font-size: 0.9rem; margin: 0 0 8px; color: var(--text-muted);"><strong>Before you start.</strong> You need three things: what a <em>pixel</em> and an <em>8-bit</em> value are (a whole number from 0 to 255); what a <em>weighted average</em> is; and what it means to <em>compare two images</em> over the same region. If any of those is new, read <a href="../bridge/human-eyes-and-pixels/">Why human eyes and pixels forgive inexact math</a> first. No circuit knowledge is required.</p>
+
+  <p style="font-size: 0.9rem; margin: 0 0 6px;"><strong>The controls on this page, and what each one does.</strong></p>
+  <ul style="font-size: 0.9rem; margin: 0 0 10px 18px; padding: 0;">
+    <li><strong>Test Image Pattern</strong> &mdash; the picture being filtered: high-contrast shapes, a smooth gradient with noise, or a sharp checkerboard grid.</li>
+    <li><strong>Convolution Filter Kernel</strong> &mdash; Gaussian Blur 3&times;3, Sobel Edge Detection, or Sharpen Filter.</li>
+    <li><strong>Arithmetic Model</strong> &mdash; <em>Exact products</em>, or a teaching model that clears the low 4 or the low 6 bits of every product.</li>
+    <li><strong>PSNR (8-bit, inner pixels)</strong> and <strong>Mean Squared Error (MSE)</strong> &mdash; the live quality scores, computed over the inner region only (the 1-pixel border has no full neighbourhood, so it is not filtered).</li>
+    <li><strong>Hardware Energy</strong> &mdash; permanently "Not measured". This page never measures circuit energy, and no setting changes that.</li>
+  </ul>
+
+  <p style="font-size: 0.9rem; margin: 0 0 6px;"><strong>Three tasks. Predict on paper, then operate the controls, then explain.</strong></p>
+  <ol style="font-size: 0.9rem; margin: 0 0 10px 18px; padding: 0;">
+    <li><strong>Task 1 &mdash; does a fine grid forgive truncation?</strong> Set <em>Test Image Pattern</em> to <em>Sharp Checkerboard Grid</em> and leave <em>Arithmetic Model</em> at <em>Exact products</em>. Predict whether PSNR will be high. Now change <em>only</em> the <em>Arithmetic Model</em> to <em>clear 4 LSBs</em>. Predict whether PSNR drops a little or a lot, then check. <em>Explain:</em> why a fine alternating pattern is harder on a truncating model than a smooth ramp is.</li>
+    <li><strong>Task 2 &mdash; whose fault is the score?</strong> Set the pattern to <em>Smooth Gradient &amp; Noise</em> and compare <em>clear 4 LSBs</em> with <em>clear 6 LSBs</em>: predict which loses more, then check. Now switch the kernel to <em>Sobel Edge Detection</em> and repeat. <em>Explain:</em> you changed the kernel, not the arithmetic model &mdash; so why did the score move?</li>
+    <li><strong>Task 3 &mdash; quality versus cost.</strong> Find any combination whose PSNR stays above 40&nbsp;dB. Predict what happens to the <em>Hardware Energy</em> card. <em>Explain</em> what its answer tells you about the difference between a quality score and a cost measurement.</li>
+  </ol>
+
+  <p style="font-size: 0.9rem; margin: 0 0 6px;"><strong>A static worked example (do this one with a pencil).</strong> "Clearing the low 4 bits" means forcing the last four binary digits of a number to 0. The exact product 23 &times; 7 = 161 is <code>10100001</code> in binary; clearing the low 4 bits gives <code>10100000</code> = 160, an error of &minus;1. For 27 &times; 5 = 135, which is <code>10000111</code>, clearing the low 4 bits gives <code>10000000</code> = 128, an error of &minus;7. The rule is the same in both cases; the <em>size</em> of the error is not. Every error under this teaching model is negative, because clearing bits can only lower a product &mdash; so these errors are <em>biased</em> in one direction rather than cancelling out. That is why the score changes smoothly rather than staying put.</p>
+
+  <p class="stat-note" style="text-align: left; margin: 0;">This sandbox is a teaching model of one arithmetic change inside a filtering calculation. It is not a circuit simulator, it does not measure energy, and its PSNR is not a claim about what a viewer sees.</p>
+</section>
+
 
 <div class="control-panel">
   <div class="control-item">
@@ -133,19 +160,18 @@
   <div class="control-item">
     <label>Convolution Filter Kernel:</label>
     <select id="kernelSelect">
-      <option value="gaussian">Gaussian Blur 3x3</option>
-      <option value="sobel" selected>Sobel Edge Detection</option>
+      <option value="gaussian" selected>Gaussian Blur 3x3</option>
+      <option value="sobel">Sobel Edge Detection</option>
       <option value="sharpen">Sharpen Filter</option>
     </select>
   </div>
 
   <div class="control-item">
-    <label>Multiplier Architecture:</label>
+    <label>Arithmetic Model:</label>
     <select id="multSelect">
-      <option value="exact">Exact (100% Precision)</option>
-      <option value="trunc4">Truncated-4 (Drop 4 LSBs)</option>
-      <option value="roba" selected>RoBA Multiplier (Power-of-2 Rounding)</option>
-      <option value="noisy">Aggressive Truncated-6</option>
+      <option value="exact">Exact products</option>
+      <option value="trunc4" selected>Output truncation teaching model: clear 4 LSBs of each product</option>
+      <option value="noisy">Output truncation teaching model: clear 6 LSBs of each product</option>
     </select>
   </div>
 </div>
@@ -163,33 +189,27 @@
 
 <div class="stats-bar">
   <div class="stat-card">
-    <div class="stat-label">PSNR (Peak Signal-to-Noise)</div>
-    <div class="stat-val" id="valPSNR">38.4 dB</div>
+    <div class="stat-label">PSNR (8-bit, inner pixels)</div>
+    <div class="stat-val" id="valPSNR">N/A</div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">Perceptual Quality</div>
-    <div class="stat-val" id="valQuality" style="color: var(--primary);">Excellent</div>
+    <div class="stat-label">Mean Squared Error (MSE)</div>
+    <div class="stat-val" id="valQuality">N/A</div>
+    <div class="stat-note" id="valDetail"></div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">Hardware Energy Saved</div>
-    <div class="stat-val" id="valEnergy">~75%</div>
+    <div class="stat-label">Hardware Energy</div>
+    <div class="stat-val" id="valEnergy">Not measured</div>
+    <div class="stat-note">This browser model does not measure circuit energy.</div>
   </div>
 </div>
+<p class="stat-note" id="valNote" style="text-align: left; margin-top: 10px;">MSE and PSNR compare the displayed 8-bit pixels of the two images over the inner region (the 1-pixel border is not filtered). They describe numeric difference only and are not a guarantee that the output is acceptable for a task.</p>
 
 <script>
-const canvasE = document.getElementById('canvasExact');
-const ctxE = canvasE.getContext('2d');
-const canvasA = document.getElementById('canvasApprox');
-const ctxA = canvasA.getContext('2d');
+const IMG_W = 200, IMG_H = 200;
 
-const imgSelect = document.getElementById('imgSelect');
-const kernelSelect = document.getElementById('kernelSelect');
-const multSelect = document.getElementById('multSelect');
-
-function createPattern(type) {
-  const w = 200, h = 200;
-  const imgData = ctxE.createImageData(w, h);
-  const d = imgData.data;
+function createPattern(type, w = IMG_W, h = IMG_H) {
+  const d = new Uint8ClampedArray(w * h * 4);
 
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
@@ -210,54 +230,42 @@ function createPattern(type) {
       d[idx+3] = 255;
     }
   }
-  return imgData;
+  return { width: w, height: h, data: d };
 }
 
+// Teaching models, not circuits: the exact product has its low bits cleared.
+// Two's complement masking rounds negative products toward minus infinity.
 function approxMul(a, b, mode) {
   const exact = a * b;
-  if (mode === 'exact') return exact;
   if (mode === 'trunc4') return exact & ~0x0F;
   if (mode === 'noisy') return exact & ~0x3F;
-  if (mode === 'roba') {
-    if (a === 0 || b === 0) return 0;
-    const ar = Math.pow(2, Math.round(Math.log2(Math.abs(a) || 1)));
-    const br = Math.pow(2, Math.round(Math.log2(Math.abs(b) || 1)));
-    return (ar * b) + (br * a) - (ar * br);
-  }
   return exact;
 }
 
-function applyConvolution() {
-  const pattern = imgSelect.value;
-  const kernelType = kernelSelect.value;
-  const multMode = multSelect.value;
-
-  const src = createPattern(pattern);
-  const w = 200, h = 200;
-
-  const outE = ctxE.createImageData(w, h);
-  const outA = ctxA.createImageData(w, h);
-
-  let k = [
+const KERNELS = {
+  gaussian: [
     [1/16, 2/16, 1/16],
     [2/16, 4/16, 2/16],
     [1/16, 2/16, 1/16]
-  ];
-  if (kernelType === 'sobel') {
-    k = [
-      [-1, 0, 1],
-      [-2, 0, 2],
-      [-1, 0, 1]
-    ];
-  } else if (kernelType === 'sharpen') {
-    k = [
-      [0, -1, 0],
-      [-1, 5, -1],
-      [0, -1, 0]
-    ];
-  }
+  ],
+  sobel: [
+    [-1, 0, 1],
+    [-2, 0, 2],
+    [-1, 0, 1]
+  ],
+  sharpen: [
+    [0, -1, 0],
+    [-1, 5, -1],
+    [0, -1, 0]
+  ]
+};
 
-  let mse = 0;
+function filterImages(src, w, h, k, multMode) {
+  const outE = { width: w, height: h, data: new Uint8ClampedArray(w * h * 4) };
+  const outA = { width: w, height: h, data: new Uint8ClampedArray(w * h * 4) };
+  let sqErr = 0;
+  let count = 0;
+  let differing = 0;
 
   for (let y = 1; y < h - 1; y++) {
     for (let x = 1; x < w - 1; x++) {
@@ -274,49 +282,60 @@ function applyConvolution() {
         }
       }
 
-      const clampedE = Math.min(255, Math.max(0, sumE));
-      const clampedA = Math.min(255, Math.max(0, sumA));
-
       const idx = (y * w + x) * 4;
-      outE.data[idx] = outE.data[idx+1] = outE.data[idx+2] = clampedE;
+      outE.data[idx] = outE.data[idx+1] = outE.data[idx+2] = sumE;
       outE.data[idx+3] = 255;
-
-      outA.data[idx] = outA.data[idx+1] = outA.data[idx+2] = clampedA;
+      outA.data[idx] = outA.data[idx+1] = outA.data[idx+2] = sumA;
       outA.data[idx+3] = 255;
 
-      mse += Math.pow(clampedE - clampedA, 2);
+      // Error is measured on the stored 8-bit pixels, i.e. what the canvases display.
+      const diff = outE.data[idx] - outA.data[idx];
+      sqErr += diff * diff;
+      if (diff !== 0) differing++;
+      count++;
     }
   }
 
-  ctxE.putImageData(outE, 0, 0);
-  ctxA.putImageData(outA, 0, 0);
-
-  mse = mse / (w * h);
-  let psnr = 99.0;
-  if (mse > 0) psnr = 10 * Math.log10((255 * 255) / mse);
-
-  document.getElementById('valPSNR').innerText = psnr > 60 ? '∞ (Exact)' : psnr.toFixed(1) + ' dB';
-  
-  const qEl = document.getElementById('valQuality');
-  if (psnr > 35) {
-    qEl.innerText = "Excellent";
-    qEl.style.color = "var(--primary)";
-  } else if (psnr > 25) {
-    qEl.innerText = "Good";
-    qEl.style.color = "var(--primary)";
-  } else {
-    qEl.innerText = "Degraded";
-    qEl.style.color = "var(--accent)";
-  }
-
-  const energyMap = { exact: '0%', trunc4: '~45%', roba: '~75%', noisy: '~82%' };
-  document.getElementById('valEnergy').innerText = energyMap[multMode];
+  return { outE, outA, count, differing, mse: count > 0 ? sqErr / count : NaN };
 }
 
-imgSelect.addEventListener('change', applyConvolution);
-kernelSelect.addEventListener('change', applyConvolution);
-multSelect.addEventListener('change', applyConvolution);
-applyConvolution();
+function describeMetrics(r) {
+  if (r.count === 0) {
+    return { psnr: 'N/A', mse: 'N/A', detail: 'No inner pixels to compare.' };
+  }
+  if (r.mse === 0) {
+    return { psnr: '∞', mse: '0', detail: `0 of ${r.count} inner pixels differ.` };
+  }
+  const psnr = 10 * Math.log10((255 * 255) / r.mse);
+  const mse = r.mse < 0.01 ? r.mse.toExponential(2) : r.mse.toFixed(4);
+  return { psnr: psnr.toFixed(2) + ' dB', mse, detail: `${r.differing} of ${r.count} inner pixels differ.` };
+}
+
+if (typeof document !== 'undefined') {
+  const ctxE = document.getElementById('canvasExact').getContext('2d');
+  const ctxA = document.getElementById('canvasApprox').getContext('2d');
+  const imgSelect = document.getElementById('imgSelect');
+  const kernelSelect = document.getElementById('kernelSelect');
+  const multSelect = document.getElementById('multSelect');
+
+  const applyConvolution = () => {
+    const src = createPattern(imgSelect.value);
+    const r = filterImages(src, IMG_W, IMG_H, KERNELS[kernelSelect.value], multSelect.value);
+
+    ctxE.putImageData(new ImageData(r.outE.data, IMG_W, IMG_H), 0, 0);
+    ctxA.putImageData(new ImageData(r.outA.data, IMG_W, IMG_H), 0, 0);
+
+    const m = describeMetrics(r);
+    document.getElementById('valPSNR').textContent = m.psnr;
+    document.getElementById('valQuality').textContent = m.mse;
+    document.getElementById('valDetail').textContent = m.detail;
+  };
+
+  imgSelect.addEventListener('change', applyConvolution);
+  kernelSelect.addEventListener('change', applyConvolution);
+  multSelect.addEventListener('change', applyConvolution);
+  applyConvolution();
+}
 </script>
 </body>
 </html>

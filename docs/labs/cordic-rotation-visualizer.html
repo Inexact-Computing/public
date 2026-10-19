@@ -130,12 +130,50 @@
       font-family: monospace;
       color: var(--primary);
     }
+    details.guide {
+      margin: 0 0 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    details.guide summary { cursor: pointer; font-weight: 600; color: var(--primary); }
+    details.guide table { border-collapse: collapse; font-size: 13px; margin: 6px 0; }
+    details.guide th, details.guide td { border: 1px solid var(--card-border); padding: 3px 6px; text-align: left; }
   </style>
 </head>
 <body>
 <div class="wrap">
   <h1>🧭 CORDIC Coordinate Rotation Visualizer Lab</h1>
-  <p class="lede">See how CORDIC rotates vectors using <strong>only bit-shifts and additions</strong> (no multipliers!). See why early termination saves 40% latency with under 0.5° phase error.</p>
+  <p class="lede">Rotation-mode CORDIC turns the unit vector (1, 0) towards θ using micro-rotations by atan(2<sup>−i</sup>), each needing only shifts and additions in hardware. This page emulates the recurrence in floating point (no fixed-point word length is modelled); the angle and magnitude shown are measured from the resulting vector.</p>
+
+  <details class="guide">
+    <summary>Guided tasks: what each control does (static text)</summary>
+    <p><strong>Before you start:</strong> the “Start here” part of the Approximate CORDIC page: coordinates, turning an arrow by small angles whose tangent is 1, ½, ¼, …, and scaling. Small example: from (1, 0), step 0 turns +45° to (1, 1); step 1 turns −26.57° to (1 + 1 × 0.5, 1 − 1 × 0.5) = (1.5, 0.5). Both new values use the old x and y.</p>
+    <p><strong>Controls and readings</strong></p>
+    <ul>
+      <li><strong>Target Angle (θ)</strong>: −90° to 90° in steps of 0.5°. <strong>Number of CORDIC Iterations</strong>: 1 to 8. Drag a slider, or click it and use the arrow keys.</li>
+      <li><strong>Approximation Mode</strong>: <em>Fixed count</em> runs all N steps and scales by K<sub>N</sub>; <em>Early termination</em> stops after step 3 or later once the leftover angle is below 1°; <em>Approximate scale factor 0.625</em> runs all N steps but scales by 0.625.</li>
+      <li><strong>Vector Angle</strong> and <strong>Magnitude</strong>: measured from the final arrow. <strong>Angle Error</strong> = vector angle − θ. Magnitude should be 1 after correct scaling.</li>
+      <li><strong>Iterations Run</strong>: steps actually executed, out of N. <strong>Scale Used</strong>: the factor applied at the end. <strong>Residual z</strong>: the leftover angle.</li>
+      <li><strong>Picture</strong>: the circle has length 1, the dashed line is the target, the teal arrow is the scaled CORDIC result drawn at its computed length.</li>
+    </ul>
+    <p><strong>Task 1.</strong> Predict the vector angle for θ = 30° with 5 fixed steps. Set Target Angle 30.0°, 5 iterations and <em>Fixed count</em>, then read.</p>
+    <p><strong>Task 2.</strong> Change to 8 iterations. What happens to the angle error and the scale?</p>
+    <p><strong>Task 3.</strong> Back at 5 iterations, choose <em>Approximate scale factor 0.625</em>. Which reading changes, and which stays the same?</p>
+    <details>
+      <summary>Expected readings</summary>
+      <table>
+        <tr><th>Setting (θ = 30°)</th><th>Vector Angle</th><th>Angle Error</th><th>Magnitude</th><th>Iterations Run</th><th>Scale Used</th><th>Residual z</th></tr>
+        <tr><td>Fixed count, 5</td><td>28.92°</td><td>-1.08°</td><td>1.0000</td><td>5 of 5</td><td>0.6076</td><td>1.08°</td></tr>
+        <tr><td>Fixed count, 8</td><td>30.26°</td><td>+0.26°</td><td>1.0000</td><td>8 of 8</td><td>0.6073</td><td>-0.26°</td></tr>
+        <tr><td>Scale 0.625, 5</td><td>28.92°</td><td>-1.08°</td><td>1.0286</td><td>5 of 5</td><td>0.6250</td><td>1.08°</td></tr>
+      </table>
+      <p>More steps bring the angle closer here. The 0.625 scale multiplies x and y by the same number, so it changes the length (2.9% too long) but not the angle.</p>
+    </details>
+  </details>
 
   <div class="grid">
     <div class="controls">
@@ -147,16 +185,20 @@
 
       <label>Approximation Mode:</label>
       <select id="modeSelect">
-        <option value="standard">Full Standard CORDIC (All Iterations)</option>
-        <option value="pruned" selected>Adaptive Early-Termination (Stop when |θ| < 1.0°)</option>
-        <option value="scale">Approximate Scale Factor K (Shift-Only K=0.625)</option>
+        <option value="standard">Fixed count: run all N iterations, scale by K_N</option>
+        <option value="pruned" selected>Early termination: stop after iteration i ≥ 3 once |z| &lt; 1.0°, scale by K for the iterations run</option>
+        <option value="scale">Approximate scale factor 0.625 (= 2⁻¹ + 2⁻³) instead of K_N</option>
       </select>
 
       <div class="stats">
-        <div class="stat"><div class="stat-label">Calculated Angle</div><div class="stat-value" id="sAngle">44.8°</div></div>
-        <div class="stat"><div class="stat-label">Phase Error</div><div class="stat-value" id="sErr" style="color: var(--primary);">0.2°</div></div>
-        <div class="stat"><div class="stat-label">Shift-Add Cycles</div><div class="stat-value" id="sCycles">5</div></div>
+        <div class="stat"><div class="stat-label">Vector Angle</div><div class="stat-value" id="sAngle">44.8°</div></div>
+        <div class="stat"><div class="stat-label">Angle Error</div><div class="stat-value" id="sErr" style="color: var(--primary);">0.2°</div></div>
+        <div class="stat"><div class="stat-label">Magnitude</div><div class="stat-value" id="sMag">1.000</div></div>
+        <div class="stat"><div class="stat-label">Iterations Run</div><div class="stat-value" id="sCycles">5</div></div>
+        <div class="stat"><div class="stat-label">Scale Used</div><div class="stat-value" id="sK">0.6073</div></div>
+        <div class="stat"><div class="stat-label">Residual z</div><div class="stat-value" id="sZ">0.0°</div></div>
       </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin: 8px 0 0;">Angle error = vector angle − θ. Magnitude should be 1 after correct scaling. With N iterations the reachable range is ±Σ atan(2<sup>−i</sup>), i = 0…N−1; for the current N this is ±<span id="sRange">92.7°</span>.</p>
     </div>
 
     <div>
@@ -172,50 +214,77 @@ const sTheta = document.getElementById('sliderTheta');
 const sIter = document.getElementById('sliderIter');
 const modeSelect = document.getElementById('modeSelect');
 
-const microAngles = [45.0, 26.565, 14.036, 7.125, 3.576, 1.790, 0.895, 0.448];
+const DEG = 180 / Math.PI;
+const MAX_ITERS = 8;
+const microAngles = [];
+for (let i = 0; i < MAX_ITERS; i++) microAngles.push(Math.atan(Math.pow(2, -i)) * DEG);
+
+// K_n = prod_{i<n} 1/sqrt(1 + 2^-2i): the gain correction for exactly n iterations.
+function gainCorrection(n) {
+  let k = 1;
+  for (let i = 0; i < n; i++) k /= Math.sqrt(1 + Math.pow(2, -2 * i));
+  return k;
+}
+
+function cordicRotate(targetDeg, maxIters, mode) {
+  if (!Number.isInteger(maxIters) || maxIters < 1 || maxIters > MAX_ITERS) {
+    throw new RangeError('iterations must be an integer in 1..' + MAX_ITERS);
+  }
+  let x = 1.0, y = 0.0, z = targetDeg;
+  let n = 0;
+  for (let i = 0; i < maxIters; i++) {
+    const d = z >= 0 ? 1 : -1;
+    const xNext = x - d * y * Math.pow(2, -i);
+    const yNext = y + d * x * Math.pow(2, -i);
+    x = xNext;
+    y = yNext;
+    z = z - d * microAngles[i];
+    n++;
+    if (mode === 'pruned' && i >= 3 && Math.abs(z) < 1.0) break;
+  }
+  const k = mode === 'scale' ? 0.625 : gainCorrection(n);
+  x *= k;
+  y *= k;
+  return {
+    x, y, k, iterations: n, residualZ: z,
+    angle: Math.atan2(y, x) * DEG,
+    magnitude: Math.hypot(x, y)
+  };
+}
+
+function reachableRange(n) {
+  let s = 0;
+  for (let i = 0; i < n; i++) s += microAngles[i];
+  return s;
+}
 
 function update() {
   const target = parseFloat(sTheta.value);
-  const maxIters = parseInt(sIter.value);
+  const maxIters = parseInt(sIter.value, 10);
   const mode = modeSelect.value;
 
   document.getElementById('valTheta').innerText = target.toFixed(1) + '°';
   document.getElementById('valIter').innerText = maxIters;
 
-  let x = 1.0, y = 0.0, z = target;
-  let executedCycles = 0;
+  const r = cordicRotate(target, maxIters, mode);
+  const angleError = r.angle - target;
 
-  for (let i = 0; i < maxIters; i++) {
-    executedCycles++;
-    const d = z >= 0 ? 1 : -1;
-    const shiftX = y * Math.pow(2, -i);
-    const shiftY = x * Math.pow(2, -i);
-    x = x - d * shiftX;
-    y = y + d * shiftY;
-    z = z - d * microAngles[i];
-
-    if (mode === 'pruned' && Math.abs(z) < 1.0 && i >= 3) break;
-  }
-
-  let k = 0.607252935;
-  if (mode === 'scale') k = 0.625;
-
-  x = x * k;
-  y = y * k;
-
-  const calculatedAngle = Math.atan2(y, x) * 180 / Math.PI;
-  const phaseError = Math.abs(calculatedAngle - target);
-
-  document.getElementById('sAngle').innerText = calculatedAngle.toFixed(1) + '°';
+  document.getElementById('sAngle').innerText = r.angle.toFixed(2) + '°';
   const sErr = document.getElementById('sErr');
-  sErr.innerText = phaseError.toFixed(2) + '°';
-  sErr.style.color = phaseError < 0.5 ? 'var(--primary)' : 'var(--accent)';
-  document.getElementById('sCycles').innerText = executedCycles;
+  sErr.innerText = (angleError >= 0 ? '+' : '') + angleError.toFixed(2) + '°';
+  sErr.style.color = Math.abs(angleError) < 0.5 ? 'var(--primary)' : 'var(--accent)';
+  const sMag = document.getElementById('sMag');
+  sMag.innerText = r.magnitude.toFixed(4);
+  sMag.style.color = Math.abs(r.magnitude - 1) < 0.005 ? 'var(--primary)' : 'var(--accent)';
+  document.getElementById('sCycles').innerText = r.iterations + ' of ' + maxIters;
+  document.getElementById('sK').innerText = r.k.toFixed(4);
+  document.getElementById('sZ').innerText = r.residualZ.toFixed(2) + '°';
+  document.getElementById('sRange').innerText = reachableRange(maxIters).toFixed(1) + '°';
 
-  draw(target, calculatedAngle);
+  draw(target, r);
 }
 
-function draw(targetDeg, calcDeg) {
+function draw(targetDeg, res) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const cx = canvas.width / 2;
   const cy = canvas.height / 2;
@@ -244,24 +313,25 @@ function draw(targetDeg, calcDeg) {
   ctx.stroke();
   ctx.setLineDash([]);
 
-  const calcRad = -calcDeg * Math.PI / 180;
+  const tipX = cx + r * res.x;
+  const tipY = cy - r * res.y;
   ctx.strokeStyle = '#00897b';
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(cx, cy);
-  ctx.lineTo(cx + r * Math.cos(calcRad), cy + r * Math.sin(calcRad));
+  ctx.lineTo(tipX, tipY);
   ctx.stroke();
 
   ctx.fillStyle = '#ff7043';
   ctx.beginPath();
-  ctx.arc(cx + r * Math.cos(calcRad), cy + r * Math.sin(calcRad), 6, 0, 2 * Math.PI);
+  ctx.arc(tipX, tipY, 6, 0, 2 * Math.PI);
   ctx.fill();
 
   ctx.fillStyle = '#94a3b8';
   ctx.font = '11px Roboto, sans-serif';
-  ctx.fillText('Target (Dashed)', 12, 20);
+  ctx.fillText('Circle = unit magnitude; dashed = target θ', 12, 20);
   ctx.fillStyle = '#00897b';
-  ctx.fillText('CORDIC Vector (Teal)', 12, 36);
+  ctx.fillText('Teal = scaled CORDIC vector, drawn at its computed length', 12, 36);
 }
 
 sTheta.addEventListener('input', update);
