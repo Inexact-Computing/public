@@ -64,7 +64,7 @@ extra_javascript:
   - https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/katex.min.js
   - https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/contrib/auto-render.min.js
   - javascripts/katex.js
-  - javascripts/theme.js
+  - javascripts/theme.js?v=2
 
 nav:
   - Home: index.md
