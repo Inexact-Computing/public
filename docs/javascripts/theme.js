@@ -57,6 +57,10 @@
       remember(theme);
       paint(theme);
     };
+    // Material also handles Enter on the palette form; let only this button handle it.
+    if (button) button.addEventListener('keydown', event => {
+      if (event.key === 'Enter') event.stopPropagation();
+    });
     if (button) button.addEventListener('click', event => {
       // Replace the two practice tools' local cycle; no reload or input reset.
       event.stopImmediatePropagation();
