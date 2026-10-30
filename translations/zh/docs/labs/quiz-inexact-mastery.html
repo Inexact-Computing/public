@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>非精确计算掌握程度自测</title>
+<style>
+  :root {
+    --primary: #00897b;
+    --primary-light: #26a69a;
+    --primary-dark: #00695c;
+    --accent: #ff7043;
+    --accent-dark: #f4511e;
+    --bg: transparent;
+    --card-bg: #f8fafc;
+    --card-border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --btn-bg: #ffffff;
+    --btn-border: #cbd5e1;
+    --correct-bg: #e6f4ea;
+    --correct-border: #00897b;
+    --correct-text: #004d40;
+    --wrong-bg: #fbe9e7;
+    --wrong-border: #ff7043;
+    --wrong-text: #bf360c;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #26a69a;
+      --primary-light: #4db6ac;
+      --primary-dark: #00897b;
+      --accent: #ff7043;
+      --accent-dark: #f4511e;
+      --bg: transparent;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --btn-bg: #0f172a;
+      --btn-border: #334155;
+      --correct-bg: #004d40;
+      --correct-border: #26a69a;
+      --correct-text: #e0f2f1;
+      --wrong-bg: #4a1508;
+      --wrong-border: #ff7043;
+      --wrong-text: #ffccbc;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 4px;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .quiz-card {
+    background: var(--card-bg);
+    padding: 16px 18px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    border: 1px solid var(--card-border);
+    transition: all 0.2s ease;
+  }
+  .q-title {
+    font-size: 15.5px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  .option-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 14px;
+    margin-bottom: 7px;
+    background: var(--btn-bg);
+    color: var(--text);
+    border: 1px solid var(--btn-border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+  .option-btn:hover:not([disabled]) {
+    border-color: var(--primary);
+    background: var(--card-border);
+  }
+  .correct {
+    background: var(--correct-bg) !important;
+    border-color: var(--correct-border) !important;
+    color: var(--correct-text) !important;
+    font-weight: 600;
+  }
+  .wrong {
+    background: var(--wrong-bg) !important;
+    border-color: var(--wrong-border) !important;
+    color: var(--wrong-text) !important;
+  }
+  .feedback {
+    margin-top: 10px;
+    font-size: 13.5px;
+    display: none;
+    line-height: 1.5;
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: var(--btn-bg);
+    border-left: 4px solid var(--primary);
+  }
+  .score-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: var(--card-bg);
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary);
+    border: 1px solid var(--card-border);
+    margin-top: 14px;
+  }
+  .reset-btn {
+    background: var(--primary);
+    color: #ffffff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .reset-btn:hover {
+    background: var(--primary-dark);
+  }
+</style>
+<link rel="stylesheet" href="../stylesheets/theme.css">
+<script src="../javascripts/theme.js?v=2" defer></script>
+</head>
+<body>
+
+<div class="quiz-card">
+  <div class="q-title">&#128216; 测验使用说明（请先阅读）</div>
+  <p style="font-size: 0.9rem; margin: 0 0 8px;">这是<strong>选做的进阶自测</strong>。四道题涉及前面三个主题：位权（<a href="../start/bits-and-carry/">比特与进位</a>）、误差距离／平均误差距离／错误率（Error Distance，ED／Mean Error Distance，MED／Error Rate，ER）（<a href="../fundamentals/error-metrics-made-easy/">轻松理解误差指标</a>），以及行波进位加法器的延迟取决于什么（<a href="../taxonomy/adders/">近似加法器</a>）。</p>
+  <ul style="font-size: 0.9rem; margin: 0 0 8px 18px; padding: 0;">
+    <li>即使尚未阅读本站的任何新页面，也可能答对4/4：这里检查的是这些<em>前置知识</em>，不考查新增内容。</li>
+    <li>它<strong>不能</strong>替代各页内“检查你的理解”的题目（带WB编号的题目）。页内题检查所在页的知识；这里检查其基础。</li>
+    <li>每题作答后即锁定。系统会标出正确选项，若你选错，也会标出你的选项，并解释原因。<strong>&#128260; 重新作答</strong>按钮会清除全部答案，重新开始。</li>
+    <li>成绩不会记入其他地方，答案不会保存或发送 &mdash; 计数器仅在本页运行，重新加载即归零。</li>
+  </ul>
+  <p style="font-size: 0.9rem; margin: 0;">先在纸上作答：选一个选项，再分别用一句话说明其余三个为什么错。</p>
+</div>
+
+<div class="quiz-card" id="q1">
+  <div class="q-title">1. 精确4比特加法器得到7 + 1 = 8，近似加法器却返回7。这个和只用于判断“是否至少为8”。判断结果会怎样？</div>
+  <button class="option-btn" data-q="1" data-opt="0">A. 不变，因为误差只有1。</button>
+  <button class="option-btn" data-q="1" data-opt="1">B. 不变，因为近似加法器对大多数其他输入都正确。</button>
+  <button class="option-btn" data-q="1" data-opt="2">C. 判断改变：精确和给出“是”（8 &ge; 8），近似和给出“否”（7 &lt; 8）。</button>
+  <button class="option-btn" data-q="1" data-opt="3">D. 必须先测量峰值信噪比（PSNR）才能判断。</button>
+  <div class="feedback" id="f1"></div>
+</div>
+
+<div class="quiz-card" id="q2">
+  <div class="q-title">2. 一个无符号二进制数的第2位（从最右边第0位开始计数）由0变为1，其他位不变。数值如何变化？</div>
+  <button class="option-btn" data-q="2" data-opt="0">A. 增加2。</button>
+  <button class="option-btn" data-q="2" data-opt="1">B. 增加4。</button>
+  <button class="option-btn" data-q="2" data-opt="2">C. 变为两倍。</button>
+  <button class="option-btn" data-q="2" data-opt="3">D. 增加8。</button>
+  <div class="feedback" id="f2"></div>
+</div>
+
+<div class="quiz-card" id="q3">
+  <div class="q-title">3. 精确行波进位加法器中，通常由什么决定最长延迟（关键路径）？</div>
+  <button class="option-btn" data-q="3" data-opt="0">A. 进位可能必须逐级通过每一个比特位置。</button>
+  <button class="option-btn" data-q="3" data-opt="1">B. 即使没有进位，高位和位也需要更多逻辑门。</button>
+  <button class="option-btn" data-q="3" data-opt="2">C. 用与门生成部分积。</button>
+  <button class="option-btn" data-q="3" data-opt="3">D. 从存储器装载两个操作数。</button>
+  <div class="feedback" id="f3"></div>
+</div>
+
+<div class="quiz-card" id="q4">
+  <div class="q-title">4. 假设结果位数足够。将3（二进制0011）乘以2<sup>3</sup>，可以左移3位实现。结果是多少？</div>
+  <button class="option-btn" data-q="4" data-opt="0">A. 6</button>
+  <button class="option-btn" data-q="4" data-opt="1">B. 11</button>
+  <button class="option-btn" data-q="4" data-opt="2">C. 12</button>
+  <button class="option-btn" data-q="4" data-opt="3">D. 24</button>
+  <div class="feedback" id="f4"></div>
+</div>
+
+<div class="score-box">
+  <div>已完成：<span id="answered">0</span>/4 | 得分：<span id="pts">0</span>/4</div>
+  <button class="reset-btn" id="resetBtn">🔄 重新作答</button>
+</div>
+
+<script>
+// Index of the right option for questions 1-4. This table is the only source of truth for scoring.
+const ANSWERS = [2, 1, 0, 3];
+const LETTERS = ['A', 'B', 'C', 'D'];
+const explanations = {
+  1: "误差虽然只有1，却恰好跨过阈值：8通过判断，7不能。误差能否接受取决于任务，不能只看误差有多小。",
+  2: "第k位的位权为2^k。第2位的位权为2^2 = 4，因此无论其他比特是什么，把它从0设为1都恰好增加4。",
+  3: "行波进位加法器的每一位都必须等待低一位传来的进位。最坏情况下（例如1111 + 0001），进位经过每一级，因此延迟随位数增长。",
+  4: "左移一位相当于乘以2，因此左移三位相当于乘以2^3 = 8：0011变为11000，也就是3 x 8 = 24。"
+};
+
+function createQuizState() {
+  return { answered: [null, null, null, null] };
+}
+
+function answerQuestion(state, qNum, optIdx) {
+  if (state.answered[qNum - 1] !== null) return null;
+  state.answered[qNum - 1] = optIdx;
+  return { isRight: optIdx === ANSWERS[qNum - 1], rightIdx: ANSWERS[qNum - 1] };
+}
+
+function quizTotals(state) {
+  let completed = 0;
+  let score = 0;
+  state.answered.forEach((opt, i) => {
+    if (opt === null) return;
+    completed++;
+    if (opt === ANSWERS[i]) score++;
+  });
+  return { completed, score };
+}
+
+if (typeof document !== 'undefined') {
+  let state = createQuizState();
+
+  const updateTotals = () => {
+    const t = quizTotals(state);
+    document.getElementById('answered').textContent = t.completed;
+    document.getElementById('pts').textContent = t.score;
+  };
+
+  const check = (qNum, optIdx) => {
+    const result = answerQuestion(state, qNum, optIdx);
+    if (result === null) return;
+
+    const btns = document.getElementById('q' + qNum).querySelectorAll('.option-btn');
+    btns.forEach((btn, idx) => {
+      btn.disabled = true;
+      if (idx === result.rightIdx) btn.classList.add('correct');
+      else if (idx === optIdx) btn.classList.add('wrong');
+    });
+
+    const fb = document.getElementById('f' + qNum);
+    const verdict = document.createElement('strong');
+    verdict.textContent = result.isRight
+      ? '✅ 正确。 '
+      : '❌ 未答对。你选择了 ' + LETTERS[optIdx] + '；正确答案是 ' + LETTERS[result.rightIdx] + '。 ';
+    fb.replaceChildren(verdict, document.createTextNode(explanations[qNum]));
+    fb.style.display = 'block';
+
+    updateTotals();
+  };
+
+  const resetQuiz = () => {
+    state = createQuizState();
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById('q' + i).querySelectorAll('.option-btn').forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('correct', 'wrong');
+      });
+      const fb = document.getElementById('f' + i);
+      fb.style.display = 'none';
+      fb.replaceChildren();
+    }
+    updateTotals();
+  };
+
+  document.querySelectorAll('.option-btn').forEach(btn => {
+    btn.addEventListener('click', () => check(Number(btn.dataset.q), Number(btn.dataset.opt)));
+  });
+  document.getElementById('resetBtn').addEventListener('click', resetQuiz);
+}
+</script>
+</body>
+</html>

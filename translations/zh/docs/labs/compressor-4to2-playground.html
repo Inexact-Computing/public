@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4:2近似压缩器实验台</title>
+  <style>
+    :root {
+      --primary: #00897b;
+      --primary-light: #26a69a;
+      --primary-dark: #00695c;
+      --accent: #ff7043;
+      --accent-dark: #f4511e;
+      --bg: #ffffff;
+      --card-bg: #f8fafc;
+      --card-border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #26a69a;
+        --primary-light: #4db6ac;
+        --primary-dark: #00897b;
+        --accent: #ff7043;
+        --accent-dark: #f4511e;
+        --bg: #1e293b;
+        --card-bg: #0f172a;
+        --card-border: #334155;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --input-bg: #1e293b;
+        --input-border: #475569;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 14px;
+      font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 850px;
+      margin: 0 auto;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: var(--card-bg);
+    }
+    h1 {
+      margin: 0 0 0.35rem;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .lede {
+      margin: 0 0 0.85rem;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+    }
+    .inputs-grid {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      background: var(--input-bg);
+      padding: 14px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+      justify-content: space-around;
+    }
+    .bit-toggle {
+      text-align: center;
+      cursor: pointer;
+    }
+    .bit-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      font-weight: bold;
+      margin: 0 auto 6px;
+      transition: all 0.2s;
+      border: 2px solid var(--input-border);
+      color: var(--text);
+    }
+    .bit-circle.on {
+      background: var(--primary);
+      border-color: var(--primary-light);
+      color: #fff;
+      box-shadow: 0 0 8px rgba(0, 150, 136, 0.4);
+    }
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .card {
+      background: var(--input-bg);
+      padding: 14px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+      text-align: center;
+    }
+    .out-bits {
+      font-family: monospace;
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 6px;
+      color: var(--primary);
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.5rem;
+    }
+    .stat {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .stat-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: monospace;
+      color: var(--primary);
+    }
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--text);
+      border: 1px solid var(--input-border);
+      font-family: inherit;
+      margin-bottom: 14px;
+    }
+    .note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 10px 0 0;
+    }
+    table.tt {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: monospace;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    table.tt th, table.tt td {
+      border: 1px solid var(--card-border);
+      padding: 2px 4px;
+      text-align: center;
+    }
+    table.tt tr.current td { background: rgba(0, 150, 136, 0.18); font-weight: bold; }
+    table.tt td.bad { color: var(--accent); font-weight: bold; }
+    details { margin-top: 14px; }
+    details.guide {
+      margin: 0 0 14px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    details.guide summary { cursor: pointer; font-weight: 600; color: var(--primary); }
+    details.guide table { border-collapse: collapse; font-size: 13px; margin: 6px 0; }
+    details.guide th, details.guide td { border: 1px solid var(--card-border); padding: 3px 6px; text-align: left; }
+  </style>
+<link rel="stylesheet" href="../stylesheets/theme.css">
+<script src="../javascripts/theme.js?v=2" defer></script>
+</head>
+<body>
+<div class="wrap">
+  <h1>🗜️ 4:2近似压缩器实验台</h1>
+  <p class="lede">精确4:2压缩器（4:2 compressor）接收同一列的四个比特（X₁–X₄），加上相邻压缩器送来的输入进位，输出和位Sum（位权1）及两个位权2的输出Carry、Cout，使X₁+X₂+X₃+X₄+Cin = Sum + 2·(Carry + Cout)。单击输入比特，与Momeni等人的两种近似设计比较（IEEE Trans. Computers，2015）。</p>
+
+  <details class="guide">
+    <summary>引导任务：各控件的作用（静态说明）</summary>
+    <p><strong>开始之前：</strong> 全加器（Full Adder，FA）将同一列的三个比特计数为和位 + 2·进位（见“近似乘法器”页入门部分第3步）。4:2压缩器对四个比特加输入进位计数。小例子：四个1且输入进位 = 0时，4 = 0 + 2·1 + 2·1，即和位 = 0、进位 = 1、输出进位Cout = 1。</p>
+    <p><strong>控件与读数</strong></p>
+    <ul>
+      <li><strong>顶部菜单</strong>：设计1保留输入进位与Cout；设计2没有这两项，因此只与X₁ + X₂ + X₃ + X₄比较。</li>
+      <li><strong>X₁–X₄与输入进位圆圈</strong>：单击圆圈，在0与1之间切换该比特。设计2忽略输入进位圆圈。</li>
+      <li><strong>精确4:2压缩器</strong> 卡片：精确输出及对应数值，括号内为应得计数。 <strong>近似设计</strong> 卡片：所选设计的相同信息。</li>
+      <li><strong>当前输入</strong>：显示“正确”，或“错误”及有符号差值（近似结果 − 应得值）。 <strong>错误行数</strong>：全部输入行中，精确压缩器及所选设计分别算错多少行。</li>
+      <li><strong>完整真值表</strong> （底部）：各输入行及其输出，当前输入高亮显示。如果无法单击圆圈，可在此读取每种情况。</li>
+    </ul>
+    <p><strong>任务1。</strong> 实验默认X₂ = 1、X₄ = 1。预测计数及设计1是否正确，再读取卡片。</p>
+    <p><strong>任务2。</strong> 设置X₁ = X₂ = X₃ = X₄ = 1、输入进位 = 0。先预测，再读取两张卡片与 <em>当前输入</em>.</p>
+    <p><strong>任务3。</strong> 将输入进位切换为1，再选择设计2。为什么设计2卡片的应得值仍为4？</p>
+    <details>
+      <summary>预期读数</summary>
+      <table>
+        <tr><th>输入</th><th>设计</th><th>精确卡片</th><th>近似卡片（应得值）</th><th>当前输入</th></tr>
+        <tr><td>X₂ = X₄ = 1，其余为0</td><td>设计1</td><td>和位=0，进位=1，Cout=0 → 2</td><td>和位=0，进位=0，Cout=1 → 2（2）</td><td>正确</td></tr>
+        <tr><td>X₁–X₄ = 1，输入进位 = 0</td><td>设计1</td><td>和位=0，进位=1，Cout=1 → 4</td><td>和位=1，进位=0，Cout=1 → 3（4）</td><td>错误（-1）</td></tr>
+        <tr><td>X₁–X₄ = 1，输入进位 = 1</td><td>设计1</td><td>和位=1，进位=1，Cout=1 → 5</td><td>和位=0，进位=1，Cout=1 → 4（5）</td><td>错误（-1）</td></tr>
+        <tr><td>X₁–X₄ = 1，输入进位 = 1</td><td>设计2</td><td>和位=1，进位=1，Cout=1 → 5</td><td>和位=1，进位=1 → 3（4）</td><td>错误（-1）</td></tr>
+      </table>
+      <p>设计2没有进位输入，所以应得值只统计X₁–X₄。错误行数在设计1显示12/32，在设计2显示4/16；这些是真值表计数，不是芯片测量值。</p>
+    </details>
+  </details>
+
+  <select id="designSelect" onchange="update()">
+    <option value="d1" selected>近似设计1（Momeni等人，式5–7）：保留Cin与Cout</option>
+    <option value="d2">近似设计2（Momeni等人，式8–9）：无Cin、无Cout</option>
+  </select>
+
+  <div class="inputs-grid">
+    <div class="bit-toggle" onclick="toggleBit('x1')">
+      <div class="bit-circle" id="c_x1">0</div>
+      <div style="font-size: 12px; color: var(--text-muted);">输入X₁</div>
+    </div>
+    <div class="bit-toggle" onclick="toggleBit('x2')">
+      <div class="bit-circle on" id="c_x2">1</div>
+      <div style="font-size: 12px; color: var(--text-muted);">输入X₂</div>
+    </div>
+    <div class="bit-toggle" onclick="toggleBit('x3')">
+      <div class="bit-circle" id="c_x3">0</div>
+      <div style="font-size: 12px; color: var(--text-muted);">输入X₃</div>
+    </div>
+    <div class="bit-toggle" onclick="toggleBit('x4')">
+      <div class="bit-circle on" id="c_x4">1</div>
+      <div style="font-size: 12px; color: var(--text-muted);">输入X₄</div>
+    </div>
+    <div class="bit-toggle" onclick="toggleBit('cin')">
+      <div class="bit-circle" id="c_cin">0</div>
+      <div style="font-size: 12px; color: var(--text-muted);">输入进位</div>
+    </div>
+  </div>
+
+  <div class="results-grid">
+    <div class="card">
+      <div style="color: var(--text-muted); font-size: 13px;">精确4:2压缩器（式2–4）</div>
+      <div class="out-bits" id="exactOut">和位=0，进位=1，Cout=0</div>
+      <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">和位 + 2·（进位 + Cout） = <span id="exactVal" style="font-weight: bold; color: var(--primary);">2</span> （应得值 <span id="exactRef">2</span>）</div>
+    </div>
+
+    <div class="card">
+      <div style="color: var(--text-muted); font-size: 13px;" id="approxTitle">近似设计1</div>
+      <div class="out-bits" id="approxOut" style="color: var(--accent);">和位=0，进位=1，Cout=0</div>
+      <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;"><span id="approxFormula">和位 + 2·（进位 + Cout）</span> = <span id="approxVal" style="font-weight: bold; color: var(--accent);">2</span> （应得值 <span id="approxRef">2</span>）</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">当前输入</div><div class="stat-value" id="sMatch" style="color: var(--primary);">正确</div></div>
+    <div class="stat"><div class="stat-label">精确设计：错误行数</div><div class="stat-value" id="sExactRows">0/32</div></div>
+    <div class="stat"><div class="stat-label">所选设计：错误行数</div><div class="stat-value" id="sApproxRows">12/32</div></div>
+  </div>
+  <p class="note" id="designNote"></p>
+  <p class="note">本页按上述方程计算错误行数，不计算硬件指标：Momeni等人（表V）报告设计1使用28个晶体管，设计2使用26个，对比的精确压缩器使用52个；延迟与功率结果（表IV）采用32/22/16 nm模型、1 GHz频率、扇出4。来源：A. Momeni, J. Han, P. Montuschi, F. Lombardi, “Design and Analysis of Approximate Compressors for Multiplication,” IEEE Trans. Computers 64(4):984–994, 2015, doi:10.1109/TC.2014.2308214。</p>
+
+  <details>
+    <summary>完整真值表（由本页计算；当前输入高亮；单击展开）</summary>
+    <table class="tt" id="truthTable"></table>
+  </details>
+</div>
+
+<script>
+const state = { x1: 0, x2: 1, x3: 0, x4: 1, cin: 0 };
+
+function toggleBit(k) {
+  state[k] = state[k] ? 0 : 1;
+  const el = document.getElementById('c_' + k);
+  el.innerText = state[k];
+  if (state[k]) el.classList.add('on');
+  else el.classList.remove('on');
+  update();
+}
+
+const xnor = (p, q) => 1 - (p ^ q);
+
+// Exact compressor, Momeni et al. Eqs. (2)-(4): Sum has weight 1, Carry and Cout weight 2.
+function exactCompressor(s) {
+  const x12 = s.x1 ^ s.x2;
+  const x1234 = x12 ^ s.x3 ^ s.x4;
+  return {
+    sum: x1234 ^ s.cin,
+    cout: x12 ? s.x3 : s.x1,
+    carry: x1234 ? s.cin : s.x4
+  };
+}
+
+// Approximate Design 1, Eqs. (5)-(7).
+function design1(s) {
+  return {
+    carry: s.cin,
+    cout: (s.x1 | s.x2) & (s.x3 | s.x4),
+    sum: (1 - s.cin) & (xnor(s.x1, s.x2) | xnor(s.x3, s.x4))
+  };
+}
+
+// Approximate Design 2, Eqs. (8)-(9): four inputs, two outputs; Cin is not an input.
+function design2(s) {
+  return {
+    carry: (s.x1 | s.x2) & (s.x3 | s.x4),
+    sum: xnor(s.x1, s.x2) | xnor(s.x3, s.x4)
+  };
+}
+
+function outputValue(o) {
+  return o.sum + 2 * o.carry + 2 * (o.cout || 0);
+}
+
+function expectedValue(s, design) {
+  return s.x1 + s.x2 + s.x3 + s.x4 + (design === 'd2' ? 0 : s.cin);
+}
+
+function approxCompressor(design, s) {
+  return design === 'd2' ? design2(s) : design1(s);
+}
+
+function allInputs(withCin) {
+  const rows = [];
+  for (let v = 0; v < (withCin ? 32 : 16); v++) {
+    rows.push({ x1: v & 1, x2: (v >> 1) & 1, x3: (v >> 2) & 1, x4: (v >> 3) & 1, cin: (v >> 4) & 1 });
+  }
+  return rows;
+}
+
+function countWrongRows(design) {
+  const rows = allInputs(design !== 'd2');
+  let wrong = 0;
+  for (const s of rows) {
+    const o = design === 'exact' ? exactCompressor(s) : approxCompressor(design, s);
+    if (outputValue(o) !== expectedValue(s, design)) wrong++;
+  }
+  return { wrong, total: rows.length };
+}
+
+function fmtOut(o) {
+  return `和位=${o.sum}，进位=${o.carry}` + (o.cout === undefined ? '' : `，Cout=${o.cout}`);
+}
+
+function renderTable(design) {
+  const rows = allInputs(design !== 'd2');
+  const head = '<tr><th>' + (design === 'd2' ? '' : 'Cin</th><th>') +
+    'X₄</th><th>X₃</th><th>X₂</th><th>X₁</th><th>应得值</th><th>精确S C Co</th><th>近似输出</th><th>近似值</th><th>差值</th></tr>';
+  let body = '';
+  for (const s of rows) {
+    const e = exactCompressor(s);
+    const a = approxCompressor(design, s);
+    const want = expectedValue(s, design);
+    const diff = outputValue(a) - want;
+    const cur = s.x1 === state.x1 && s.x2 === state.x2 && s.x3 === state.x3 && s.x4 === state.x4 &&
+      (design === 'd2' || s.cin === state.cin);
+    body += '<tr' + (cur ? ' class="current"' : '') + '><td>' +
+      (design === 'd2' ? '' : s.cin + '</td><td>') +
+      [s.x4, s.x3, s.x2, s.x1, want, `${e.sum} ${e.carry} ${e.cout}`, fmtOut(a), outputValue(a)].join('</td><td>') +
+      '</td><td' + (diff ? ' class="bad"' : '') + '>' + (diff > 0 ? '+' : '') + diff + '</td></tr>';
+  }
+  document.getElementById('truthTable').innerHTML = head + body;
+}
+
+function update() {
+  const design = document.getElementById('designSelect').value;
+  const e = exactCompressor(state);
+  const a = approxCompressor(design, state);
+
+  document.getElementById('exactOut').innerText = fmtOut(e);
+  document.getElementById('exactVal').innerText = outputValue(e);
+  document.getElementById('exactRef').innerText = expectedValue(state, 'exact');
+
+  document.getElementById('approxTitle').innerText = design === 'd2' ? '近似设计2（式8–9）' : '近似设计1（式5–7）';
+  document.getElementById('approxOut').innerText = fmtOut(a);
+  document.getElementById('approxFormula').innerText = design === 'd2' ? '和位 + 2·进位' : '和位 + 2·（进位 + Cout）';
+  document.getElementById('approxVal').innerText = outputValue(a);
+  const want = expectedValue(state, design);
+  document.getElementById('approxRef').innerText = want;
+
+  const diff = outputValue(a) - want;
+  const sMatch = document.getElementById('sMatch');
+  if (diff === 0) {
+    sMatch.innerText = '正确';
+    sMatch.style.color = 'var(--primary)';
+  } else {
+    sMatch.innerText = `错误（${diff > 0 ? '+' : ''}${diff}）`;
+    sMatch.style.color = 'var(--accent)';
+  }
+
+  const ex = countWrongRows('exact');
+  const ap = countWrongRows(design);
+  document.getElementById('sExactRows').innerText = `${ex.wrong}/${ex.total}`;
+  document.getElementById('sApproxRows').innerText = `${ap.wrong}/${ap.total} (${(100 * ap.wrong / ap.total).toFixed(1)}%)`;
+  document.getElementById('designNote').innerText = design === 'd2'
+    ? '设计2没有Cin或Cout；在16个输入行上将其数值与X₁+X₂+X₃+X₄比较，忽略Cin开关。'
+    : '设计1保留Cin与Cout；在全部32个输入行上将其数值与X₁+X₂+X₃+X₄+Cin比较。';
+  renderTable(design);
+}
+update();
+</script>
+</body>
+</html>

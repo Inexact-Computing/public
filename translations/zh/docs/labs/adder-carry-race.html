@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>加法器进位传播竞赛实验</title>
+  <style>
+    :root {
+      --primary: #00897b;
+      --primary-light: #26a69a;
+      --primary-dark: #00695c;
+      --accent: #ff7043;
+      --accent-dark: #f4511e;
+      --bg: #ffffff;
+      --card-bg: #f8fafc;
+      --card-border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      --canvas-bg: #0f172a;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #26a69a;
+        --primary-light: #4db6ac;
+        --primary-dark: #00897b;
+        --accent: #ff7043;
+        --accent-dark: #f4511e;
+        --bg: #1e293b;
+        --card-bg: #0f172a;
+        --card-border: #334155;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --input-bg: #1e293b;
+        --input-border: #475569;
+        --canvas-bg: #090d16;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 14px;
+      font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 850px;
+      margin: 0 auto;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: var(--card-bg);
+    }
+    h1 {
+      margin: 0 0 0.35rem;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .lede {
+      margin: 0 0 0.85rem;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .cellBtn {
+      border: 1px solid var(--card-border);
+      background: var(--input-bg);
+      color: var(--text);
+      padding: 0.6rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .cellBtn.active {
+      background: var(--primary);
+      border-color: var(--primary-dark);
+      color: #ffffff;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      background: var(--input-bg);
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+    }
+    button.primary {
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      padding: 0.55rem 1.1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    button.primary:hover {
+      background: var(--primary-dark);
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .stat {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .stat-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: monospace;
+      color: var(--primary);
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 200px;
+      background: var(--canvas-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+    }
+  </style>
+<link rel="stylesheet" href="../stylesheets/theme.css">
+<script src="../javascripts/theme.js?v=2" defer></script>
+</head>
+<body>
+<div class="wrap">
+  <h1>⚡ 加法器进位传播竞赛实验</h1>
+  <p class="lede">输入两个无符号16比特操作数，比较精确加法与两种限制进位传播范围的近似加法器：ACA-4使用每一位之前的4位预测进位；LOA-8用或门近似处理低8位。下方所有和与误差都由本页计算；条形动画仅作示意，不是时序仿真。</p>
+
+  <div class="grid" id="archBtns">
+    <button class="cellBtn active" data-arch="rca" onclick="setArch('rca')">1. 精确行波进位加法器（Ripple-Carry Adder，RCA）</button>
+    <button class="cellBtn" data-arch="cla" onclick="setArch('cla')">2. 精确超前进位加法器（Carry-Lookahead Adder，CLA）</button>
+    <button class="cellBtn" data-arch="aca" onclick="setArch('aca')">3. 近乎正确加法器（Almost-Correct Adder，ACA-4）</button>
+    <button class="cellBtn" data-arch="loa" onclick="setArch('loa')">4. 低位或运算加法器（Lower-Part OR Adder，LOA-8）</button>
+  </div>
+
+  <div class="controls">
+    <label style="font-size: 0.85rem; color: var(--text-muted);">A（十六进制） <input id="inA" value="FFFF" size="6" maxlength="4" style="font-family: monospace; background: var(--card-bg); color: var(--text); border: 1px solid var(--card-border); border-radius: 4px; padding: 2px 4px;"></label>
+    <label style="font-size: 0.85rem; color: var(--text-muted);">B（十六进制） <input id="inB" value="0001" size="6" maxlength="4" style="font-family: monospace; background: var(--card-bg); color: var(--text); border: 1px solid var(--card-border); border-radius: 4px; padding: 2px 4px;"></label>
+    <button class="primary" onclick="startRace()">▶ 重播示意动画</button>
+    <span style="font-size: 0.85rem; color: var(--text-muted);">位宽：<strong>16比特</strong>，无符号；和保留输出进位（17比特）</span>
+    <span id="inputMsg" style="font-size: 0.85rem; color: var(--accent);"></span>
+  </div>
+
+  <canvas id="raceCanvas" width="850" height="200"></canvas>
+  <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 0;">仅作示意：各架构的动画速度用于演示，并非根据电路模型计算。每个方格显示一个计算得到的和位；橙色表示该位与精确和不同。</p>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">架构</div><div class="stat-value" id="sArch">RCA</div></div>
+    <div class="stat"><div class="stat-label">精确A + B</div><div class="stat-value" id="sExact">0x10000</div></div>
+    <div class="stat"><div class="stat-label">加法器输出</div><div class="stat-value" id="sApprox">0x10000</div></div>
+    <div class="stat"><div class="stat-label">误差（输出 − 精确结果）</div><div class="stat-value" id="sError" style="color: var(--primary);">0</div></div>
+    <div class="stat"><div class="stat-label">本对输入的最长精确进位传播长度</div><div class="stat-value" id="sRipple">15</div></div>
+  </div>
+  <p style="font-size: 12px; color: var(--text-muted); margin: 8px 0 0;" id="sPath"></p>
+  <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0;" id="sStats"></p>
+</div>
+
+<script>
+const canvas = document.getElementById('raceCanvas');
+const ctx = canvas.getContext('2d');
+const WIDTH = 16;
+const ACA_K = 4;
+const LOA_K = 8;
+const STATS_SEED = 20261014;
+const STATS_SAMPLES = 100000;
+
+let currentArch = 'rca';
+let animFrame = null;
+let raceProgress = 0;
+let current = { a: 0xFFFF, b: 0x0001, exact: 0x10000, approx: 0x10000 };
+
+const archs = {
+  rca: { name: 'RCA', speed: 1, path: '精确运算。进位可能逐级传播，经过全部16个比特位置。' },
+  cla: { name: 'CLA', speed: 4, path: '精确运算：和与RCA相同，进位由深度为对数量级的超前进位网络计算。本页没有仿真该网络结构及其延迟。' },
+  aca: { name: 'ACA-4', speed: 4, path: '近乎正确加法器（Verma、Brisk与Ienne，DATE 2008）：仅使用第i−4至i−1位计算进入第i位的进位，并假定第i−4位没有输入进位。当且仅当真实进位需要传播超过4个位置时，输出出错。' },
+  loa: { name: 'LOA-8', speed: 2, path: '低位或运算加法器（Mahdiani等人，IEEE TCAS-I 2010）：第0–7位的和位为a_j或b_j，进入第8位的进位为a_7与b_7，第8–15位使用精确的8比特加法器。' }
+};
+
+function mask(w) { return w >= 31 ? 0x7FFFFFFF : (1 << w) - 1; }
+
+function checkOperand(x, n) {
+  if (!Number.isInteger(x) || x < 0 || x > mask(n)) throw new RangeError('操作数必须是无符号' + n + '比特整数');
+  return x;
+}
+
+function exactAdd(a, b, n) {
+  checkOperand(a, n); checkOperand(b, n);
+  return a + b;
+}
+
+// Carry into bit i predicted from bits max(0, i-k) .. i-1 with carry-in 0; i = n gives the carry-out.
+function acaAdd(a, b, n, k) {
+  checkOperand(a, n); checkOperand(b, n);
+  let out = 0;
+  for (let i = 0; i <= n; i++) {
+    const lo = Math.max(0, i - k);
+    const w = i - lo;
+    const c = (((a >> lo) & mask(w)) + ((b >> lo) & mask(w))) >> w;
+    if (i < n) out += (((a >> i) ^ (b >> i) ^ c) & 1) * Math.pow(2, i);
+    else out += c * Math.pow(2, n);
+  }
+  return out;
+}
+
+function loaAdd(a, b, n, k) {
+  checkOperand(a, n); checkOperand(b, n);
+  const lower = (a | b) & mask(k);
+  const cin = k > 0 ? ((a >> (k - 1)) & (b >> (k - 1)) & 1) : 0;
+  const upper = (a >> k) + (b >> k) + cin;
+  return upper * Math.pow(2, k) + lower;
+}
+
+function adderOutput(arch, a, b) {
+  if (arch === 'rca' || arch === 'cla') return exactAdd(a, b, WIDTH);
+  if (arch === 'aca') return acaAdd(a, b, WIDTH, ACA_K);
+  if (arch === 'loa') return loaAdd(a, b, WIDTH, LOA_K);
+  throw new Error('未知架构 ' + arch);
+}
+
+// Longest number of positions an exact carry travels: a generate at bit j followed by propagates.
+function longestCarryRipple(a, b, n) {
+  let best = 0;
+  for (let j = 0; j < n; j++) {
+    if (!((a >> j) & (b >> j) & 1)) continue;
+    let len = 1;
+    while (j + len < n && (((a ^ b) >> (j + len)) & 1)) len++;
+    best = Math.max(best, len);
+  }
+  return best;
+}
+
+function mulberry32(seed) {
+  return function () {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = seed;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function randomStats(arch, samples = STATS_SAMPLES, seed = STATS_SEED) {
+  const rnd = mulberry32(seed);
+  let wrong = 0, sumAbs = 0, maxAbs = 0, sumRed = 0, redCount = 0;
+  for (let s = 0; s < samples; s++) {
+    const a = Math.floor(rnd() * 65536), b = Math.floor(rnd() * 65536);
+    const exact = a + b;
+    const d = adderOutput(arch, a, b) - exact;
+    if (d !== 0) wrong++;
+    sumAbs += Math.abs(d);
+    maxAbs = Math.max(maxAbs, Math.abs(d));
+    if (exact > 0) { sumRed += Math.abs(d) / exact; redCount++; }
+  }
+  return { samples, wrong, errorRate: wrong / samples, med: sumAbs / samples, maxAbs, mred: redCount ? sumRed / redCount : 0 };
+}
+
+const statsCache = {};
+
+function hex(x) { return '0x' + x.toString(16).toUpperCase(); }
+
+function readOperand(id) {
+  const s = document.getElementById(id).value.trim().replace(/^0x/i, '');
+  if (!/^[0-9a-fA-F]{1,4}$/.test(s)) return null;
+  return parseInt(s, 16);
+}
+
+function compute() {
+  const a = readOperand('inA'), b = readOperand('inB');
+  const msg = document.getElementById('inputMsg');
+  if (a === null || b === null) {
+    msg.innerText = '两个操作数均须输入1–4位十六进制数字（0000–FFFF）。';
+    ['sExact', 'sApprox', 'sError', 'sRipple'].forEach(id => { document.getElementById(id).innerText = '—'; });
+    return false;
+  }
+  msg.innerText = '';
+  const exact = exactAdd(a, b, WIDTH);
+  const approx = adderOutput(currentArch, a, b);
+  current = { a, b, exact, approx };
+
+  const d = archs[currentArch];
+  document.getElementById('sArch').innerText = d.name;
+  document.getElementById('sExact').innerText = hex(exact);
+  document.getElementById('sApprox').innerText = hex(approx);
+  const diff = approx - exact;
+  const sErr = document.getElementById('sError');
+  sErr.innerText = (diff > 0 ? '+' : '') + diff;
+  sErr.style.color = diff === 0 ? 'var(--primary)' : 'var(--accent)';
+  const ripple = longestCarryRipple(a, b, WIDTH);
+  document.getElementById('sRipple').innerText = ripple + (ripple === 1 ? '比特' : '比特');
+  document.getElementById('sPath').innerText = d.path;
+
+  const st = statsCache[currentArch] || (statsCache[currentArch] = randomStats(currentArch));
+  document.getElementById('sStats').innerText =
+    '该架构的随机测试（' + st.samples.toLocaleString() + '对均匀随机16比特输入，固定随机种子' + STATS_SEED + '）：' +
+    '错误结果数' + st.wrong.toLocaleString() + ' (' + (100 * st.errorRate).toFixed(2) + '%), ' +
+    '平均|误差|（平均误差距离，Mean Error Distance，MED）' + st.med.toFixed(2) + '，最大|误差|' + st.maxAbs + '，平均相对误差距离（Mean Relative Error Distance，MRED）' + (100 * st.mred).toFixed(4) + '%.';
+  return true;
+}
+
+function setArch(a) {
+  currentArch = a;
+  document.querySelectorAll('.cellBtn').forEach(btn => btn.classList.toggle('active', btn.dataset.arch === a));
+  if (compute()) startRace();
+}
+
+function startRace() {
+  if (animFrame) cancelAnimationFrame(animFrame);
+  raceProgress = 0;
+  animate();
+}
+
+function animate() {
+  raceProgress += 0.25 * archs[currentArch].speed;
+  draw();
+  if (raceProgress < 16) {
+    animFrame = requestAnimationFrame(animate);
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const totalBits = 16;
+  const bitW = (canvas.width - 60) / totalBits;
+  const startX = 30;
+  const startY = 60;
+  const h = 70;
+
+  for (let i = 0; i < totalBits; i++) {
+    const bitIdx = 15 - i;
+    const x = startX + i * bitW;
+    const isCompleted = raceProgress >= (16 - i);
+    const outBit = Math.floor(current.approx / Math.pow(2, bitIdx)) % 2;
+    const exactBit = Math.floor(current.exact / Math.pow(2, bitIdx)) % 2;
+    const isApprox = outBit !== exactBit;
+
+    ctx.fillStyle = isCompleted ? '#00897b' : '#1e293b';
+    if (isApprox && isCompleted) ctx.fillStyle = '#ff7043';
+
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(x + 2, startY, bitW - 4, h);
+    ctx.strokeRect(x + 2, startY, bitW - 4, h);
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 12px Roboto, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('位' + bitIdx, x + bitW / 2, startY + 24);
+
+    ctx.font = '10px Roboto, sans-serif';
+    ctx.fillStyle = isCompleted ? '#e0f2f1' : '#64748b';
+    ctx.fillText(isCompleted ? '和=' + outBit : '…', x + bitW / 2, startY + 48);
+
+    if (i < totalBits - 1) {
+      const nextX = startX + (i + 1) * bitW;
+      ctx.strokeStyle = isCompleted ? '#26a69a' : '#334155';
+      ctx.lineWidth = isCompleted ? 2.5 : 1;
+      ctx.beginPath();
+      ctx.moveTo(x + bitW - 2, startY + h / 2);
+      ctx.lineTo(nextX + 2, startY + h / 2);
+      ctx.stroke();
+    }
+  }
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '12px Roboto, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('第15位（最高有效位，Most Significant Bit，MSB）', startX, startY + h + 24);
+  ctx.textAlign = 'right';
+  ctx.fillText('第0位（最低有效位，Least Significant Bit，LSB）', startX + totalBits * bitW, startY + h + 24);
+}
+
+document.getElementById('inA').addEventListener('input', () => { if (compute()) draw(); });
+document.getElementById('inB').addEventListener('input', () => { if (compute()) draw(); });
+compute();
+draw();
+</script>
+</body>
+</html>

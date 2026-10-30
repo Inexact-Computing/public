@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,12 +27,15 @@ jobs:
       - name: Install MkDocs
         run: pip install -r requirements.txt
       - name: Build site
-        run: mkdocs build --strict
+        run: python scripts/build_bilingual.py
+      - name: Check bilingual output
+        run: python scripts/check_bilingual.py
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
 
   deploy:
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     environment:

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>交互式乘法器探索实验</title>
+<style>
+  :root {
+    --primary: #00897b;
+    --primary-light: #26a69a;
+    --primary-dark: #00695c;
+    --accent: #ff7043;
+    --accent-dark: #f4511e;
+    --bg: #ffffff;
+    --card-bg: #f8fafc;
+    --card-border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #26a69a;
+      --primary-light: #4db6ac;
+      --primary-dark: #00897b;
+      --accent: #ff7043;
+      --accent-dark: #f4511e;
+      --bg: #1e293b;
+      --card-bg: #0f172a;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: #1e293b;
+      --input-border: #475569;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 800px;
+    margin: 10px auto;
+    padding: 16px;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+  }
+  h2 { color: var(--primary); margin-top: 0; font-size: 1.35rem; }
+  p.desc { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 16px; }
+  .control-group {
+    background: var(--card-bg);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    border: 1px solid var(--card-border);
+  }
+  label { font-weight: 600; display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 13.5px; }
+  input[type="range"] {
+    width: 100%;
+    margin-bottom: 8px;
+    accent-color: var(--primary);
+  }
+  select {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text);
+    border: 1px solid var(--input-border);
+    font-size: 14.5px;
+    font-family: inherit;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .stat-card {
+    background: var(--card-bg);
+    padding: 14px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--card-border);
+  }
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 4px;
+    font-family: monospace;
+  }
+  .highlight-error { color: var(--accent); }
+  .highlight-savings { color: var(--primary); }
+  .binary-box {
+    font-family: monospace;
+    font-size: 16px;
+    letter-spacing: 2px;
+    padding: 10px;
+    background: var(--input-bg);
+    border-radius: 6px;
+    border: 1px solid var(--input-border);
+    margin-top: 8px;
+    word-break: break-all;
+    color: var(--text);
+  }
+  details.guide {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  details.guide summary { cursor: pointer; font-weight: 600; color: var(--primary); }
+  details.guide table { border-collapse: collapse; font-size: 13px; margin: 6px 0; }
+  details.guide th, details.guide td { border: 1px solid var(--card-border); padding: 3px 6px; text-align: left; }
+  details.guide code { font-size: 13px; }
+</style>
+<link rel="stylesheet" href="../stylesheets/theme.css">
+<script src="../javascripts/theme.js?v=2" defer></script>
+</head>
+<body>
+
+<h2>🎛️ 交互式乘法器探索实验</h2>
+<p class="desc">拖动滑块，观察三种近似乘法规则：列截断（column truncation）、动态范围无偏乘法器（Dynamic Range Unbiased Multiplier，DRUM）和基于舍入的近似乘法器（Rounding-Based Approximate Multiplier，RoBA）如何改变两个无符号8比特整数的乘积。本页只计算数值，不对面积、延迟、功率或能耗建模。</p>
+
+<details class="guide">
+  <summary>引导任务：各控件的作用（静态说明）</summary>
+  <p><strong>开始之前：</strong> 先掌握二进制位权，以及“近似乘法器”页入门部分的四步乘法：生成、按位权排列、压缩、相加。小例子：3 × 5写成 <code>0011</code> × <code>0101</code>；B中为1的比特给出两行 <code>0011</code> （3）和 <code>1100</code> （12），3 + 12 = 15。</p>
+  <p><strong>控件与读数</strong></p>
+  <ul>
+    <li><strong>操作数A</strong> 与 <strong>操作数B</strong>：1至255的整数；标签显示数值及其8比特二进制形式。拖动滑块，或单击后用方向键调节（每按一次移动一步）。</li>
+    <li><strong>近似架构</strong>：精确参考、列截断（不生成i + j &lt; 4的部分积位）、无符号RoBA（将操作数舍入至2的幂），或DRUM-4（4比特窗口，最低位强制置1）。菜单下的灰框解释所选规则如何处理当前操作数。</li>
+    <li><strong>精确结果（A × B）</strong> 与 <strong>近似输出</strong>：十进制数值，下方为其16比特二进制形式。</li>
+    <li><strong>相对误差距离（Relative Error Distance，RED）</strong>：|近似结果 − 精确结果| ÷ 精确结果，针对当前操作数对。</li>
+    <li><strong>硬件成本</strong>：始终为“未建模”；本实验只计算数值。</li>
+    <li><strong>穷举统计</strong> （底部框）：所选规则在全部65,025个操作数对上的统计。移动滑块不会改变它。</li>
+  </ul>
+  <p><strong>任务1。</strong> 预测3 × 5的四种输出。再将A设为3、B设为5，逐一选择菜单选项。为什么列截断得到0？</p>
+  <p><strong>任务2。</strong> 保持RoBA和3 × 5，读取灰框中的Ar、Br，手算核对输出：Ar·B + Br·A − Ar·Br。</p>
+  <p><strong>任务3。</strong> 将A设为25、B设为3，选择DRUM-4。读取灰框中A的片段及移位量。移位后该片段代表多少？</p>
+  <details>
+    <summary>预期读数</summary>
+    <table>
+      <tr><th>操作数</th><th>菜单选项</th><th>近似输出</th><th>RED</th><th>灰框</th></tr>
+      <tr><td>3 × 5</td><td>精确</td><td>15</td><td>0.00%</td><td>参考：精确乘积</td></tr>
+      <tr><td>3 × 5</td><td>列截断</td><td>0</td><td>100.00%</td><td>丢弃i + j &lt; 4的比特</td></tr>
+      <tr><td>3 × 5</td><td>无符号RoBA</td><td>14</td><td>6.67%</td><td>Ar = 2, Br = 4</td></tr>
+      <tr><td>3 × 5</td><td>DRUM-4</td><td>15</td><td>0.00%</td><td>A片段 = 11（移位0），B片段 = 101（移位0）</td></tr>
+      <tr><td>25 × 3</td><td>DRUM-4</td><td>78</td><td>4.00%</td><td>A片段 = 1101（移位1），B片段 = 11（移位0）</td></tr>
+    </table>
+    <p>任务1：3 × 5中每个为1的部分积位都在最低四列，列截断不生成这些列。任务2：2 × 5 + 4 × 3 − 2 × 4 = 14。任务3： <code>1101</code> = 13，左移1位 = 26；26 × 3 = 78，而精确乘积为75。</p>
+  </details>
+</details>
+
+<div class="control-group">
+  <label>操作数A（无符号8比特，1–255）： <span id="valA" style="color: var(--primary); font-weight: bold;">125</span></label>
+  <input type="range" id="sliderA" min="1" max="255" value="125">
+
+  <label>操作数B（无符号8比特，1–255）： <span id="valB" style="color: var(--primary); font-weight: bold;">89</span></label>
+  <input type="range" id="sliderB" min="1" max="255" value="89">
+
+  <label>近似架构：</label>
+  <select id="archSelect">
+    <option value="exact">精确8×8无符号乘法器（参考）</option>
+    <option value="trunc4">列截断乘法器（移除部分积第0–3列，无校正）</option>
+    <option value="roba" selected>无符号RoBA（按数值距离将操作数舍入至最近的2的幂）</option>
+    <option value="drum4">DRUM-4（4比特动态片段，最低有效位强制置1）</option>
+  </select>
+  <div class="binary-box" id="archDetail" style="font-size: 13px; letter-spacing: 0;"></div>
+</div>
+
+<div class="grid">
+  <div class="stat-card">
+    <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">精确结果（A × B）</div>
+    <div class="stat-value" id="resExact">11,125</div>
+    <div class="binary-box" id="binExact">0010101101110101</div>
+  </div>
+
+  <div class="stat-card">
+    <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">近似输出</div>
+    <div class="stat-value" id="resApprox">11,008</div>
+    <div class="binary-box" id="binApprox">0010101100000000</div>
+  </div>
+</div>
+
+<div class="grid" style="margin-top: 12px;">
+  <div class="stat-card">
+    <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">相对误差距离（RED）</div>
+    <div class="stat-value highlight-error" id="resError">0.00%</div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">当前操作数对的|近似结果 − 精确结果| / 精确结果</div>
+  </div>
+
+  <div class="stat-card">
+    <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">硬件成本</div>
+    <div class="stat-value highlight-savings" id="resEnergy" style="font-size: 18px;">未建模</div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">面积、功率和能耗取决于电路、工艺及工作点；此处均不计算。</div>
+  </div>
+</div>
+
+<div class="control-group" style="margin-top: 12px; margin-bottom: 0;">
+  <label>所选架构的穷举统计（A、B均在1–255内，全部255 × 255 = 65,025个操作数对，由本页计算）：</label>
+  <div class="binary-box" id="resStats" style="font-size: 13px; letter-spacing: 0;"></div>
+</div>
+
+<script>
+const sliderA = document.getElementById('sliderA');
+const sliderB = document.getElementById('sliderB');
+const archSelect = document.getElementById('archSelect');
+
+const OPERAND_MAX = 255;
+
+function checkOperand(n) {
+  if (!Number.isInteger(n) || n < 0 || n > OPERAND_MAX) {
+    throw new RangeError('操作数必须是0至' + OPERAND_MAX + '范围内的无符号整数，实际为' + n);
+  }
+  return n;
+}
+
+function lod(n) {
+  let k = -1;
+  while (n > 0) { n >>= 1; k++; }
+  return k;
+}
+
+// RoBA rounding: nearest power of two by linear distance; a tie at 3*2^(p-1) goes to
+// the larger power, except 3, which rounds to 2. Zero rounds to 0.
+function robaRound(n) {
+  checkOperand(n);
+  if (n === 0) return 0;
+  const lo = 1 << lod(n);
+  const hi = lo << 1;
+  if (n - lo < hi - n) return lo;
+  if (n - lo > hi - n) return hi;
+  return n === 3 ? 2 : hi;
+}
+
+function robaMultiply(a, b) {
+  const ar = robaRound(a), br = robaRound(b);
+  return ar * b + br * a - ar * br;
+}
+
+function drumSegment(n, k) {
+  const t = lod(n);
+  if (t <= k - 1) return { m: n, s: 0 };
+  const s = t - k + 1;
+  return { m: (n >> s) | 1, s };
+}
+
+function drumMultiply(a, b, k = 4) {
+  checkOperand(a); checkOperand(b);
+  const x = drumSegment(a, k), y = drumSegment(b, k);
+  return (x.m * y.m) * Math.pow(2, x.s + y.s);
+}
+
+function truncColumnsMultiply(a, b, cols = 4) {
+  checkOperand(a); checkOperand(b);
+  let sum = 0;
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      if (i + j >= cols && ((a >> i) & 1) && ((b >> j) & 1)) sum += Math.pow(2, i + j);
+    }
+  }
+  return sum;
+}
+
+function approxMultiply(arch, a, b) {
+  checkOperand(a); checkOperand(b);
+  if (arch === 'exact') return a * b;
+  if (arch === 'trunc4') return truncColumnsMultiply(a, b, 4);
+  if (arch === 'roba') return robaMultiply(a, b);
+  if (arch === 'drum4') return drumMultiply(a, b, 4);
+  throw new Error('未知架构：' + arch);
+}
+
+function exhaustiveStats(arch) {
+  let n = 0, wrong = 0, sumRed = 0, maxRed = 0, sumSigned = 0, maxA = 0, maxB = 0;
+  for (let a = 1; a <= OPERAND_MAX; a++) {
+    for (let b = 1; b <= OPERAND_MAX; b++) {
+      const exact = a * b;
+      const d = approxMultiply(arch, a, b) - exact;
+      const red = Math.abs(d) / exact;
+      n++;
+      if (d !== 0) wrong++;
+      sumRed += red;
+      sumSigned += d / exact;
+      if (red > maxRed) { maxRed = red; maxA = a; maxB = b; }
+    }
+  }
+  return { n, wrong, errorRate: wrong / n, mred: sumRed / n, maxRed, maxA, maxB, meanSignedRed: sumSigned / n };
+}
+
+function archDetail(arch, a, b) {
+  if (arch === 'exact') return '参考：精确乘积A × B。';
+  if (arch === 'trunc4') return '丢弃每个i + j < 4的部分积位a_i·b_j；不加补偿常数，因此结果不会超过精确乘积。';
+  if (arch === 'roba') {
+    return 'Ar = ' + robaRound(a) + ', Br = ' + robaRound(b) + '；A×B ≈ Ar·B + Br·A − Ar·Br（仅限无符号操作数；未对有符号RoBA变体建模）。';
+  }
+  const x = drumSegment(a, 4), y = drumSegment(b, 4);
+  return 'A片段 = ' + x.m.toString(2) + '（移位' + x.s + '），B片段 = ' + y.m.toString(2) + '（移位' + y.s + '）；结果 = segA × segB × 2^' + (x.s + y.s) + '.';
+}
+
+const statsCache = {};
+function pct(x, digits) { return (x * 100).toFixed(digits) + '%'; }
+
+function compute() {
+  const a = parseInt(sliderA.value);
+  const b = parseInt(sliderB.value);
+  const arch = archSelect.value;
+
+  document.getElementById('valA').innerText = a + " (0b" + a.toString(2).padStart(8, '0') + ")";
+  document.getElementById('valB').innerText = b + " (0b" + b.toString(2).padStart(8, '0') + ")";
+
+  const exact = a * b;
+  const approx = approxMultiply(arch, a, b);
+  const err = exact === 0 ? 0 : Math.abs(approx - exact) / exact * 100;
+
+  document.getElementById('resExact').innerText = exact.toLocaleString();
+  document.getElementById('binExact').innerText = exact.toString(2).padStart(16, '0');
+
+  document.getElementById('resApprox').innerText = approx.toLocaleString();
+  document.getElementById('binApprox').innerText = approx.toString(2).padStart(16, '0');
+
+  document.getElementById('resError').innerText = err.toFixed(2) + "%";
+  document.getElementById('archDetail').innerText = archDetail(arch, a, b);
+
+  const s = statsCache[arch] || (statsCache[arch] = exhaustiveStats(arch));
+  document.getElementById('resStats').innerText =
+    '错误结果数：' + s.wrong.toLocaleString() + '／' + s.n.toLocaleString() + ' (' + pct(s.errorRate, 2) + ')' +
+    ' · 平均RED：' + pct(s.mred, 3) +
+    ' · 最大RED：' + pct(s.maxRed, 2) + (s.maxRed > 0 ? ' (A=' + s.maxA + ', B=' + s.maxB + ')' : '') +
+    ' · 平均有符号相对误差：' + (s.meanSignedRed >= 0 ? '+' : '') + pct(s.meanSignedRed, 3);
+}
+
+sliderA.addEventListener('input', compute);
+sliderB.addEventListener('input', compute);
+archSelect.addEventListener('change', compute);
+compute();
+</script>
+</body>
+</html>

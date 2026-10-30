@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>交互式图像滤波实验</title>
+<style>
+  :root {
+    --primary: #00897b;
+    --primary-light: #26a69a;
+    --primary-dark: #00695c;
+    --accent: #ff7043;
+    --accent-dark: #f4511e;
+    --bg: #ffffff;
+    --card-bg: #f8fafc;
+    --card-border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #26a69a;
+      --primary-light: #4db6ac;
+      --primary-dark: #00897b;
+      --accent: #ff7043;
+      --accent-dark: #f4511e;
+      --bg: #1e293b;
+      --card-bg: #0f172a;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: #1e293b;
+      --input-border: #475569;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 850px;
+    margin: 10px auto;
+    padding: 16px;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+  }
+  h2 { color: var(--primary); margin-top: 0; font-size: 1.35rem; }
+  .control-panel {
+    background: var(--card-bg);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    border: 1px solid var(--card-border);
+  }
+  .control-item { flex: 1; min-width: 180px; }
+  label { font-weight: 600; display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 13.5px; }
+  select, button {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text);
+    border: 1px solid var(--input-border);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  button {
+    background: var(--primary);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  button:hover { background: var(--primary-dark); }
+  .canvas-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .canvas-box {
+    background: var(--card-bg);
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--card-border);
+  }
+  canvas {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    background: #000;
+  }
+  .stats-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+  .stat-card {
+    background: var(--card-bg);
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid var(--card-border);
+  }
+  .stat-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); }
+  .stat-val { font-size: 18px; font-weight: bold; color: var(--primary); font-family: monospace; }
+  .stat-note { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+</style>
+<link rel="stylesheet" href="../stylesheets/theme.css">
+<script src="../javascripts/theme.js?v=2" defer></script>
+</head>
+<body>
+
+<h2>🖼️ 交互式图像滤波实验</h2>
+<p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 14px;">比较精确3×3互相关（对称核时等同于卷积）和把每个乘积低位置零的教学模型。所示滤波核直接使用，不翻转；Sobel方向遵循这一约定。这些数值仅衡量像素差异，不判断结果能否满足任务要求。</p>
+<section style="margin: 4px 0 14px; padding: 12px 14px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--card-bg);">
+  <h3 style="margin: 0 0 8px; font-size: 15px; color: var(--primary);">&#128216; 实验指引：如何使用本工具</h3>
+
+  <p style="font-size: 0.9rem; margin: 0 0 8px; color: var(--text-muted);"><strong>开始之前。</strong> 你需要了解三件事：什么是<em>像素</em>和<em>8比特</em>数值（0至255的整数）；什么是<em>加权平均</em>；以及在同一区域内<em>比较两幅图像</em>是什么意思。若有不熟悉的概念，先读<a href="../bridge/human-eyes-and-pixels/">人眼为何能容忍像素误差</a>。不需要电路知识。</p>
+
+  <p style="font-size: 0.9rem; margin: 0 0 6px;"><strong>本页控件及其作用。</strong></p>
+  <ul style="font-size: 0.9rem; margin: 0 0 10px 18px; padding: 0;">
+    <li><strong>测试图案</strong> &mdash; 待滤波的图像：高对比度形状、平滑渐变与噪声，或清晰棋盘格。</li>
+    <li><strong>卷积滤波核</strong> &mdash; 3&times;3高斯模糊、Sobel边缘检测，或锐化滤波。</li>
+    <li><strong>运算模型</strong> &mdash; <em>精确乘积</em>，或把每个乘积的低4位／低6位置零的教学模型。最低有效位称为Least Significant Bit（LSB）。</li>
+    <li><strong>峰值信噪比（Peak Signal-to-Noise Ratio，PSNR；8比特、内部像素）</strong>和<strong>均方误差（Mean Squared Error，MSE）</strong> &mdash; 实时质量分数，仅在内部区域计算（1像素宽的边框没有完整邻域，因此不滤波）。</li>
+    <li><strong>硬件能耗</strong> &mdash; 始终显示“未测量”。本页不测量电路能耗，任何设置都不会改变这一点。</li>
+  </ul>
+
+  <p style="font-size: 0.9rem; margin: 0 0 6px;"><strong>三个任务：先在纸上预测，再操作控件，最后解释。</strong></p>
+  <ol style="font-size: 0.9rem; margin: 0 0 10px 18px; padding: 0;">
+    <li><strong>任务1 &mdash; 精细网格能容忍截断吗？</strong> 把<em>测试图案</em>设为<em>清晰棋盘格</em>，<em>运算模型</em>保持<em>精确乘积</em>。预测PSNR是否会很高。然后<em>只</em>把<em>运算模型</em>改为<em>低4位置零</em>。预测PSNR会小幅还是大幅下降，再核对。<em>解释：</em>为什么精细交替图案比平滑渐变更考验截断模型。</li>
+    <li><strong>任务2 &mdash; 分数变化归因于谁？</strong> 将图案设为<em>平滑渐变与噪声</em>，比较<em>低4位置零</em>和<em>低6位置零</em>：先预测哪种损失更多，再核对。然后把滤波核切换到<em>Sobel边缘检测</em>并重复。<em>解释：</em>改变的是滤波核，运算模型没变，为什么分数仍会变化？</li>
+    <li><strong>任务3 &mdash; 质量与成本。</strong> 找到任意一组PSNR保持在40&nbsp;dB以上的配置。预测<em>硬件能耗</em>卡片会怎样变化。<em>解释</em>它的读数如何说明质量分数与成本测量的差别。</li>
+  </ol>
+
+  <p style="font-size: 0.9rem; margin: 0 0 6px;"><strong>静态计算示例（请用笔算）。</strong> “低4位置零”就是强制把一个数最后四个二进制位设为0。精确乘积23 &times; 7 = 161的二进制是<code>10100001</code>；低4位置零得到<code>10100000</code> = 160，误差为&minus;1。27 &times; 5 = 135的二进制是<code>10000111</code>，低4位置零得到<code>10000000</code> = 128，误差为&minus;7。两者使用相同规则，误差<em>大小</em>却不同。在这个教学模型下，误差方向为负，因为清除比特只会使乘积变小；所以这些误差向同一方向产生<em>偏差</em>，不会相互抵消。这解释了为什么分数会随配置变化，而非保持不动。</p>
+
+  <p class="stat-note" style="text-align: left; margin: 0;">本工具用教学模型展示滤波计算中的一种运算改变。它不是电路仿真器，不测量能耗，PSNR也不代表观看者的观感结论。</p>
+</section>
+
+
+<div class="control-panel">
+  <div class="control-item">
+    <label>测试图案：</label>
+    <select id="imgSelect">
+      <option value="geometric">高对比度形状</option>
+      <option value="gradient">平滑渐变与噪声</option>
+      <option value="checkerboard">清晰棋盘格</option>
+    </select>
+  </div>
+
+  <div class="control-item">
+    <label>卷积滤波核：</label>
+    <select id="kernelSelect">
+      <option value="gaussian" selected>3×3高斯模糊</option>
+      <option value="sobel">Sobel边缘检测</option>
+      <option value="sharpen">锐化滤波</option>
+    </select>
+  </div>
+
+  <div class="control-item">
+    <label>运算模型：</label>
+    <select id="multSelect">
+      <option value="exact">精确乘积</option>
+      <option value="trunc4" selected>输出截断教学模型：每个乘积的低4位置零</option>
+      <option value="noisy">输出截断教学模型：每个乘积的低6位置零</option>
+    </select>
+  </div>
+</div>
+
+<div class="canvas-grid">
+  <div class="canvas-box">
+    <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text);">精确参考图像</div>
+    <canvas id="canvasExact" width="200" height="200"></canvas>
+  </div>
+  <div class="canvas-box">
+    <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text);">近似滤波输出</div>
+    <canvas id="canvasApprox" width="200" height="200"></canvas>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-card">
+    <div class="stat-label">PSNR（8比特，内部像素）</div>
+    <div class="stat-val" id="valPSNR">不适用</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">均方误差（MSE）</div>
+    <div class="stat-val" id="valQuality">不适用</div>
+    <div class="stat-note" id="valDetail"></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">硬件能耗</div>
+    <div class="stat-val" id="valEnergy">未测量</div>
+    <div class="stat-note">此浏览器模型不测量电路能耗。</div>
+  </div>
+</div>
+<p class="stat-note" id="valNote" style="text-align: left; margin-top: 10px;">MSE和PSNR比较两幅图像内部区域显示的8比特像素（1像素宽的边框不滤波）。它们只描述数值差异，不能保证输出满足任务要求。</p>
+
+<script>
+const IMG_W = 200, IMG_H = 200;
+
+function createPattern(type, w = IMG_W, h = IMG_H) {
+  const d = new Uint8ClampedArray(w * h * 4);
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = (y * w + x) * 4;
+      let val = 128;
+      if (type === 'geometric') {
+        const dx = x - 100, dy = y - 100;
+        if (dx*dx + dy*dy < 2500) val = 240;
+        else if (Math.abs(dx) < 60 && Math.abs(dy) < 60) val = 60;
+      } else if (type === 'gradient') {
+        val = ((x + y) / 2) % 255;
+      } else if (type === 'checkerboard') {
+        val = ((Math.floor(x/25) + Math.floor(y/25)) % 2 === 0) ? 230 : 30;
+      }
+      d[idx] = val;
+      d[idx+1] = val;
+      d[idx+2] = val;
+      d[idx+3] = 255;
+    }
+  }
+  return { width: w, height: h, data: d };
+}
+
+// Teaching models, not circuits: the exact product has its low bits cleared.
+// Two's complement masking rounds negative products toward minus infinity.
+function approxMul(a, b, mode) {
+  const exact = a * b;
+  if (mode === 'trunc4') return exact & ~0x0F;
+  if (mode === 'noisy') return exact & ~0x3F;
+  return exact;
+}
+
+const KERNELS = {
+  gaussian: [
+    [1/16, 2/16, 1/16],
+    [2/16, 4/16, 2/16],
+    [1/16, 2/16, 1/16]
+  ],
+  sobel: [
+    [-1, 0, 1],
+    [-2, 0, 2],
+    [-1, 0, 1]
+  ],
+  sharpen: [
+    [0, -1, 0],
+    [-1, 5, -1],
+    [0, -1, 0]
+  ]
+};
+
+function filterImages(src, w, h, k, multMode) {
+  const outE = { width: w, height: h, data: new Uint8ClampedArray(w * h * 4) };
+  const outA = { width: w, height: h, data: new Uint8ClampedArray(w * h * 4) };
+  let sqErr = 0;
+  let count = 0;
+  let differing = 0;
+
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      let sumE = 0;
+      let sumA = 0;
+
+      for (let ky = -1; ky <= 1; ky++) {
+        for (let kx = -1; kx <= 1; kx++) {
+          const pixelVal = src.data[((y + ky) * w + (x + kx)) * 4];
+          const weight = k[ky + 1][kx + 1];
+
+          sumE += pixelVal * weight;
+          sumA += approxMul(pixelVal, weight * 16, multMode) / 16;
+        }
+      }
+
+      const idx = (y * w + x) * 4;
+      outE.data[idx] = outE.data[idx+1] = outE.data[idx+2] = sumE;
+      outE.data[idx+3] = 255;
+      outA.data[idx] = outA.data[idx+1] = outA.data[idx+2] = sumA;
+      outA.data[idx+3] = 255;
+
+      // Error is measured on the stored 8-bit pixels, i.e. what the canvases display.
+      const diff = outE.data[idx] - outA.data[idx];
+      sqErr += diff * diff;
+      if (diff !== 0) differing++;
+      count++;
+    }
+  }
+
+  return { outE, outA, count, differing, mse: count > 0 ? sqErr / count : NaN };
+}
+
+function describeMetrics(r) {
+  if (r.count === 0) {
+    return { psnr: '不适用', mse: '不适用', detail: '没有可比较的内部像素。' };
+  }
+  if (r.mse === 0) {
+    return { psnr: '∞', mse: '0', detail: `${r.count}个内部像素中有0个不同。` };
+  }
+  const psnr = 10 * Math.log10((255 * 255) / r.mse);
+  const mse = r.mse < 0.01 ? r.mse.toExponential(2) : r.mse.toFixed(4);
+  return { psnr: psnr.toFixed(2) + ' dB', mse, detail: `${r.count}个内部像素中有${r.differing}个不同。` };
+}
+
+if (typeof document !== 'undefined') {
+  const ctxE = document.getElementById('canvasExact').getContext('2d');
+  const ctxA = document.getElementById('canvasApprox').getContext('2d');
+  const imgSelect = document.getElementById('imgSelect');
+  const kernelSelect = document.getElementById('kernelSelect');
+  const multSelect = document.getElementById('multSelect');
+
+  const applyConvolution = () => {
+    const src = createPattern(imgSelect.value);
+    const r = filterImages(src, IMG_W, IMG_H, KERNELS[kernelSelect.value], multSelect.value);
+
+    ctxE.putImageData(new ImageData(r.outE.data, IMG_W, IMG_H), 0, 0);
+    ctxA.putImageData(new ImageData(r.outA.data, IMG_W, IMG_H), 0, 0);
+
+    const m = describeMetrics(r);
+    document.getElementById('valPSNR').textContent = m.psnr;
+    document.getElementById('valQuality').textContent = m.mse;
+    document.getElementById('valDetail').textContent = m.detail;
+  };
+
+  imgSelect.addEventListener('change', applyConvolution);
+  kernelSelect.addEventListener('change', applyConvolution);
+  multSelect.addEventListener('change', applyConvolution);
+  applyConvolution();
+}
+</script>
+</body>
+</html>
