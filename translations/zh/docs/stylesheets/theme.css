@@ -1,0 +1,49 @@
+/* Keep the native palette/storage, but expose one keyboard-accessible header button. */
+.tutorial-theme-enhanced > .md-header__button { display: none !important; }
+.tutorial-theme-toggle {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  min-width: 88px;
+  padding: 4px 10px;
+  margin: 4px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tutorial-theme-toggle:hover { background: #ffffff20; }
+.tutorial-theme-toggle:focus-visible { outline: 3px solid #ffca28; outline-offset: 2px; }
+
+/* These attributes are only set on labs; explicit site choice wins over OS media rules. */
+:root[data-tutorial-theme="light"], body[data-tutorial-theme="light"] {
+  color-scheme: light;
+  --primary: #00897b; --primary-light: #26a69a; --primary-dark: #00695c;
+  --accent: #ff7043; --accent-dark: #f4511e;
+  --bg: #ffffff; --card-bg: #f8fafc; --card-border: #cbd5e1;
+  --text: #1e293b; --text-muted: #475569; --input-bg: #ffffff; --input-border: #94a3b8;
+  --btn-bg: #ffffff; --btn-border: #94a3b8; --canvas-bg: #0f172a;
+  --correct-bg: #e6f4ea; --correct-border: #00897b; --correct-text: #004d40;
+  --wrong-bg: #fbe9e7; --wrong-border: #d84315; --wrong-text: #a52a0b;
+  --panel: #ffffff; --ink: #19283c; --muted: #44566e; --line: #a5b4c8; --error: #a31c2b;
+}
+:root[data-tutorial-theme="dark"], body[data-tutorial-theme="dark"] {
+  color-scheme: dark;
+  --primary: #4db6ac; --primary-light: #80cbc4; --primary-dark: #26a69a;
+  --accent: #ff8a65; --accent-dark: #ff7043;
+  --bg: #1e293b; --card-bg: #0f172a; --card-border: #64748b;
+  --text: #f8fafc; --text-muted: #cbd5e1; --input-bg: #1e293b; --input-border: #64748b;
+  --btn-bg: #0f172a; --btn-border: #64748b; --canvas-bg: #090d16;
+  --correct-bg: #004d40; --correct-border: #4db6ac; --correct-text: #a7ffeb;
+  --wrong-bg: #4e261b; --wrong-border: #ff8a65; --wrong-text: #ffccbc;
+  --panel: #202d40; --ink: #ecf2fc; --muted: #c4d0e2; --line: #8a9bb4; --error: #ffb2b7;
+}
+body.tutorial-practice[data-tutorial-theme="light"] { --accent: #075bb7; }
+body.tutorial-practice[data-tutorial-theme="dark"] { --accent: #176bc9; }

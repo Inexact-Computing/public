@@ -8,6 +8,7 @@ repo_name: Inexact-Computing/public
 repo_url: https://github.com/Inexact-Computing/public
 
 theme:
+  custom_dir: overrides
   name: material
   palette:
     - scheme: default
@@ -59,12 +60,14 @@ extra_css:
   - https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/katex.min.css
   - stylesheets/math.css
   - stylesheets/theme.css
+  - stylesheets/language.css
 
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/katex.min.js
   - https://cdn.jsdelivr.net/npm/katex@0.19.0/dist/contrib/auto-render.min.js
   - javascripts/katex.js
   - javascripts/theme.js?v=2
+  - javascripts/language.js?v=1
 
 nav:
   - Home: index.md

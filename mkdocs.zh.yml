@@ -1,0 +1,48 @@
+INHERIT: mkdocs.yml
+site_url: https://inexact-computing.github.io/public/zh/
+site_dir: site/zh
+site_name: 非精确计算学习与研究平台
+site_description: 面向中国学生的非精确与近似计算中文教程，涵盖18个阅读页面与8个交互工具。
+docs_dir: translations/zh/docs
+copyright: 李永福及课题组编写
+theme:
+  name: material
+  language: zh
+  custom_dir: overrides
+  palette:
+  - scheme: default
+    primary: teal
+    accent: deep orange
+    toggle:
+      icon: material/brightness-7
+      name: 切换为深色主题
+  - scheme: slate
+    primary: teal
+    accent: deep orange
+    toggle:
+      icon: material/brightness-4
+      name: 切换为浅色主题
+nav:
+- 首页: index.md
+- 术语表: glossary.md
+- 基础知识:
+  - 比特与进位: start/bits-and-carry.md
+  - 为什么需要非精确计算: fundamentals/why-approximate-computing.md
+  - 历史与演进: fundamentals/history-and-evolution.md
+  - 研究动机与挑战: fundamentals/motivations-and-challenges.md
+  - 误差指标入门: fundamentals/error-metrics-made-easy.md
+  - 误差指标与数学误差界: fundamentals/error-metrics.md
+  - 近似计算的方法: fundamentals/approx-paradigms.md
+- 连接实际应用:
+  - 像素与图像误差: bridge/human-eyes-and-pixels.md
+  - 人工智能与近似运算: bridge/ai-and-approximate-math.md
+- 电路与系统分类:
+  - 近似乘法器: taxonomy/multipliers.md
+  - 近似加法器: taxonomy/adders.md
+  - CORDIC: taxonomy/cordic.md
+  - 除法器与平方器: taxonomy/dividers.md
+  - DCT与FFT变换: taxonomy/transforms.md
+  - 存储器与存储系统: taxonomy/memory.md
+  - 人工智能加速器: taxonomy/accelerators.md
+extra:
+  generator: false
